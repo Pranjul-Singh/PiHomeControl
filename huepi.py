@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-from findhub import FindHub
+from FindHue import FindHue
+from FindiTach import FindiTach
 from getch import GetCh
 from datetime import datetime, timedelta
 import macros
 import logging
-
-
-# http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/turing-machine/two.html
+import thread
+import AirCon
 
 
 def executeMacro(hub, key, modifier):
@@ -15,19 +15,8 @@ def executeMacro(hub, key, modifier):
     log = "-" + key + "- [" + str(modifier) + "] "
 
     if key == "0":
-        if modifier == "OFF":
-            command = macros.colors["Default"]
-        elif modifier == "ALT1":
-            command = macros.colors["VirginBlue"]
-        elif modifier == "ALT2":
-            command = macros.colors["NightRed"]
-        elif modifier == "ALT3":
-            command = macros.colors["DimWhite"]
-        elif modifier == "ALT4":
-            command = macros.colors["Energize"]
-        else:
-            command = {"on": False}
-        log = log + "G(0) " + str(command)
+        command = {"on": False}
+        log = log + "[G0] " + str(command)
         hub.set_group(0, command)
     else:
         try:
@@ -68,16 +57,29 @@ def main():
     modTimer = datetime.min
 
     print "HuePi"
+    print "Searching local network for Global Cache iTach..."
+    logging.info("Searching local network for Global Cache iTach...")
+    itach_ip = FindiTach().search()
+    if itach_ip is None:
+        print "iTach not found."
+        logging.info("iTach not found.")
+    else:
+        print "Bridge found: %s" % str(itach_ip)
+        logging.info("iTach found: %s" % str(itach_ip))
+        logging.info("Success.")
+
     print "Searching local network for Philips Hue Bridge..."
-    hub = FindHub().search()
+    logging.info("Searching local network for Philips Hue Bridge...")
+    hub = FindHue().search()
     if hub is None:
-        print "Bridge not found."
-        logging.info("Bridge not found.")
+        print "Hue bridge not found."
+        logging.info("Hue bridge not found.")
     else:
         print "Bridge found: %s" % str(hub.ip)
         print "Started: %s" % datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print "Ready."
         runLoop = True
+        logging.info("Hue bridge found: %s" % str(hub.ip))
         logging.info("Success.")
 
     while runLoop:
@@ -89,7 +91,7 @@ def main():
             if charInput == "q":
                 runLoop = False
                 logging.info("User Interupt (Q)")
-            elif charInput == "0" or charInput == "1" \
+            elif charInput == "1" \
                  or charInput == "2" or charInput == "3" \
                  or charInput == "4" or charInput == "5" \
                  or charInput == "6" or charInput == "7" \
@@ -123,9 +125,18 @@ def main():
                 # Alternate modifier4
                 modifier = "ALT4"
                 modTimer = datetime.now()
+            elif charInput == "0":
+                # All Off
+                thread.start_new_thread(AirCon.turnAirConOff, (itach_ip,))
+                executeMacro(hub, "0", None)
+                modifier = None
+                modTimer = datetime.min
             elif charInput == "\r":
                 # Enter Key
+                thread.start_new_thread(AirCon.turnAirConOn, (itach_ip,))
                 executeMacro(hub, "H", None)
+                modifier = None
+                modTimer = datetime.min
         except Exception, e:
             logging.error("main::runLoop")
             logging.error(str(e))

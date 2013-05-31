@@ -6,8 +6,8 @@ import socket
 import struct
 import time
 
-ip = ""
-port = 1900
+ip = "239.255.250.250"
+port = 9131
 def main():
   udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -15,7 +15,7 @@ def main():
   udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
   # Join the mulitcast group
-  ip_mreq = struct.pack('4sl', socket.inet_aton("239.255.255.250"), socket.INADDR_ANY)
+  ip_mreq = struct.pack('4sl', socket.inet_aton(ip), socket.INADDR_ANY)
   udp_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, ip_mreq)
 
   # Leave the mulitcast group

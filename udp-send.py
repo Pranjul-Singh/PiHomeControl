@@ -6,9 +6,9 @@ import socket
 import struct
 import time
 
-ip = "239.255.255.250"
+ip = "239.255.250.250"
 #ip = "172.26.112.243"
-port = 1900
+port = 9131
 def main():
   udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
   

@@ -12,8 +12,8 @@ def turnAirConOn(ip_address):
         r1 = conn.getresponse()
         w = json.loads(r1.read())
         conn.close()
-        heat_index = w.get("current_observation").get("heat_index_f")
-        if heat_index > 74:
+        outside_temp = int(w.get("current_observation").get("temp_f"))
+        if outside_temp > 74:
             s = socket.socket()
             port = 4998
             s.settimeout(5)
@@ -23,7 +23,7 @@ def turnAirConOn(ip_address):
             s.send(macros.airCon1["69"] + "\r")
             response = s.recv(1024)
             s.close()
-            logging.info("-H- [None] [AC1] {'on': True, 'temp': 68, 'outside': %s}", str(heat_index))
+            logging.info("-H- [None] [AC1] {'on': True, 'temp': 69, 'outside': %s}", str(outside_temp))
     except socket.timeout:
         pass
     except:

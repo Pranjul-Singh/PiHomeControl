@@ -138,7 +138,7 @@ class Light(object):
         if self._on and value is False:
             self._reset_bri_after_on = self.transitiontime is not None
             if self._reset_bri_after_on:
-                logging.info(
+                logging.debug(
                     'Turned off light with transitiontime specified, brightness will be reset on power on')
 
         self._set('on', value)
@@ -146,7 +146,7 @@ class Light(object):
         # work around bug by resetting brightness after a power on
         if self._on is False and value is True:
             if self._reset_bri_after_on:
-                logging.info(
+                logging.debug(
                     'Light was turned off with transitiontime specified, brightness needs to be reset now.')
                 self.brightness = self._brightness
                 self._reset_bri_after_on = False
@@ -461,11 +461,11 @@ class Bridge(object):
 
     def connect(self):
         """ Connect to the Hue bridge """
-        # logging.info('Attempting to connect to the bridge...')
+        logging.debug('Attempting to connect to the bridge...')
         # If the ip and username were provided at class init
         if self.ip is not None and self.username is not None:
-            logging.info('Using ip: ' + self.ip)
-            logging.info('Using username: ' + self.username)
+            logging.debug('Using ip: ' + self.ip)
+            logging.debug('Using app id: ' + self.username)
             return
 
         if self.ip is None or self.username is None:
@@ -474,17 +474,17 @@ class Bridge(object):
                     config = json.loads(f.read())
                     if self.ip is None:
                         self.ip = list(config.keys())[0]
-                        logging.info('Using ip from config: ' + self.ip)
+                        logging.debug('Using ip from config: ' + self.ip)
                     else:
-                        logging.info('Using ip: ' + self.ip)
+                        logging.debug('Using ip: ' + self.ip)
                     if self.username is None:
                         self.username = config[self.ip]['username']
-                        logging.info(
+                        logging.debug(
                             'Using username from config: ' + self.username)
                     else:
-                        logging.info('Using username: ' + self.username)
+                        logging.debug('Using username: ' + self.username)
             except Exception as e:
-                logging.info(
+                logging.warn(
                     'Error opening config file, will attempt bridge registration')
                 self.register_app()
 

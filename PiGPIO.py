@@ -4,50 +4,37 @@ import time
 import thread
 import logging
 
-_gpioReady = False
-
 try:
-    # import RPi.GPIO as io
-    # _gpioReady = True
-    _gpioReady = False
-except ImportError, e:
-    _gpioReady = False
+    import RPi.GPIO as io
+    _gpioWorking = True
+except:
+    _gpioWorking = False
+    _loggedOnce = False
 
 
-_piDoorPin = 23
-isDoorOpen = False
+def isDoorOpen():
+    global _loggedOnce
+
+    if _gpioWorking is True:
+        return _isDoorOpenGPIO()
+    else:
+        if _loggedOnce is False:
+            logging.warn("GPIO Door detection not working.\r")
+            _loggedOnce = True
+        return False
 
 
-def _runDoorLoop(logger):
-    global isDoorOpen, _gpioReady
-
-    while True:
-        try:
-            if io.input(_piDoorPin) is True and isDoorOpen is False:
-                logger.info("Door opened.\r")
-                isDoorOpen = True
-            elif io.input(_piDoorPin) is False and isDoorOpen is True:
-                logger.info("Door closed.\r")
-                isDoorOpen = False
-        except Exception, e:
-            logger.error("Unable to determine door status: " + str(e) + "\r")
-        finally:
-            time.sleep(0.5)
+def _isDoorOpenGPIO():
+    piDoorPin = 23
+    try:
+        if io.input(piDoorPin) is True:
+            return True
+        else:
+            return False
+    except:
+        logging.error("Unable to obtain door status\r")
+        return False
 
 
 def insideTemperature():
     return -1
-
-
-def startDoorMonitor():
-    global isDoorOpen
-    logging.info("Starting door monitor.")
-    if _gpioReady is True:
-        logger = logging.getLogger('')
-        thread.start_new_thread( _runDoorLoop, (logger,))
-        if isDoorOpen:
-            logging.info(" Door open.")
-        else:
-            logging.info(" Door closed.")
-    else:
-        logging.error("Failed to start Door Watch: Pi GPIO not ready.")

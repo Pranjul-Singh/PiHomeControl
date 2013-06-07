@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-
+import phue
 import time
+import json
 import thread
 import PiGPIO
 import logging
@@ -13,18 +14,19 @@ itachIP = None
 hueBridgeIP = None
 hueAppID = "9075e416a7d67c2f6c7d9386dff2e591"
 
-hueLightStatus = []
+isDoorOpen = False
+insideTemperature = -1
 
 lightGroup = {
     "1": {"name": "Front Hall", "lightsOn": [7], "command": {"on": True, "bri": 254, "ct": 369}},
     "2": {"name": "Living Room (Overhead)", "lightsOn": [1, 2], "command": {"on": True, "bri": 254, "ct": 369}},
     "3": {"name": "Living Room (Ikea)", "lightsOn": [8, 9, 10], "command": {"on": True, "bri": 254, "ct": 369}},
-    "4": {"name": "[Unset]", "command": {"on": True, "bri": 254, "ct": 369}},
-    "5": {"name": "Kitchen", "lightsOn": [4], "command": {"on": True, "bri": 254, "ct": 369}},
-    "6": {"name": "Bedroom (Overhead)", "lightsOn": [5, 6], "command": {"on": True, "bri": 254, "ct": 369}},
-    "7": {"name": "Bed Side Lamp", "lightsOn": [3], "command": {"on": True, "bri": 254, "ct": 369}},
-    "8": {"name": "Bed Time", "lightsOn": [3], "lightsOff": [1, 2, 4, 5, 6, 7, 8, 9, 10], "command": {"on": True, "bri": 200, "ct": 369}},
-    "9": {"name": "[Unset]", "command": {"on": True, "bri": 254, "ct": 369}},
+    "4": {"name": "Kitchen", "lightsOn": [4], "command": {"on": True, "bri": 254, "ct": 369}},
+    "5": {"name": "Bedroom (Overhead)", "lightsOn": [5, 6], "command": {"on": True, "bri": 254, "ct": 369}},
+    "6": {"name": "Bed Side Lamp", "lightsOn": [3], "command": {"on": True, "bri": 254, "ct": 369}},
+    "7": {"name": "Bed Time", "lightsOn": [3], "lightsOff": [1, 2, 4, 5, 6, 7, 8, 9, 10], "command": {"on": True, "bri": 200, "ct": 369}},
+    "8": {"name": "AC-LR", "command": {"on": True, "bri": 254, "ct": 369}},
+    "9": {"name": "AC-BED", "command": {"on": True, "bri": 254, "ct": 369}},
     "H": {"name": "Home", "lightsOn": [1, 2, 4], "command": {"on": True, "bri": 254, "ct": 369}}
 }
 
@@ -86,13 +88,14 @@ _tMonitorLoop = False
 
 
 def startMonitor():
-    global _tMonitorLoop
+    global _tMonitorLoop, isDoorOpen
     if _tMonitorLoop is True:
         logging.info("System Status Monitor Already Running")
     else:
         _tMonitorLoop = True
         logger = logging.getLogger('')
         thread.start_new_thread( _getHubStatus, (logger,))
+    thread.start_new_thread( _watchDoor, (logger,))
 
 
 def stopMonitor():
@@ -101,17 +104,26 @@ def stopMonitor():
 
 
 def _getHubStatus(logger):
-    global hueBridgeIP
-    global hueAppID
-    global _tMonitorLoop
+    global hueBridgeIP, hueAppID, _tMonitorLoop, acStatus, away
+    global itachIP, hueBridgeIP, isDoorOpen, insideTemperature
 
     logger.info("Starting system status monitor.\r")
 
+    bridge = phue.Bridge(ip=hueBridgeIP, username=hueAppID)
+
     while _tMonitorLoop:
-        logger.info("*** Update Hub Status\r")
-        logger.info(str(hueBridgeIP) + "\r")
-        logger.info(str(hueAppID) + "\r")
-        time.sleep(5)
+        data = bridge.get_api()
+        data["itachIP"] = itachIP
+        data["hueBridgeIP"] = hueBridgeIP
+        data["away"] = str(away)
+        data["airConditioners"] = acStatus
+        data["isDoorOpen"] = isDoorOpen
+        data["insideTemperature"] = insideTemperature
+        data["updatedAt"] = str(datetime.now())
+        data = json.dumps(data)
+        with open("status.json", "w") as text_file:
+            text_file.write(data)
+        time.sleep(10)
 
 
 def startAway():
@@ -122,7 +134,7 @@ def startAway():
         logging.info("[AWAY] Activated.")
         away = True
         logger = logging.getLogger('')
-        thread.start_new_thread( _listenForDoor, (logger,))
+        # thread.start_new_thread( _listenForDoor, (logger,))
 
 
 def stopAway():
@@ -131,21 +143,17 @@ def stopAway():
     away = False
 
 
-def _listenForDoor(logger):
-    global away
-    counter = 0
+def _watchDoor(logger):
+    global isDoorOpen, away
 
-    while away is True and counter < 30:
-        counter = counter + 1
-        time.sleep(1)
-
-    while away is True:
-        try:
-            if PiGPIO.isDoorOpen is True:
-                logger.info("[AWAY] Deactivated: Door Opened\r")
-                away = False
-                KeyboardListener.executeMacro("H", None)
+    while True:
+        newDoorStatus = PiGPIO.isDoorOpen()
+        if newDoorStatus is not isDoorOpen:
+            isDoorOpen = newDoorStatus
+            if isDoorOpen is True:
+                logger.info("Door opened.")
+                if away:
+                    KeyboardListener.executeMacro("H")
             else:
-                time.sleep(1)
-        except Exception, e:
-            logging.error("Error occured while checking door status: " + str(e))
+                logger.info("Door closed.")
+        time.sleep(0.5)

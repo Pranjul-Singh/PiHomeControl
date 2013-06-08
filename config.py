@@ -7,6 +7,10 @@ import logging
 import KeyboardListener
 from datetime import datetime, timedelta
 
+
+# http://pythonhosted.org/RPIO/
+
+
 away = False
 awayArmed = datetime.min
 

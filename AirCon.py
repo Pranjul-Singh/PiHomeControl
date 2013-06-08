@@ -1,5 +1,4 @@
 import json
-import PiGPIO
 import socket
 import config
 import httplib
@@ -62,7 +61,8 @@ def turnOn(device):
 
 
 def autoOn(device):
-    insideTemp = PiGPIO.insideTemperature()
+    #insideTemp = PiGPIO.insideTemperature()
+    insideTemp = -1
     insideThresh = config.acSettings.get("InsideThreshold")
     insideExceeds = insideTemp > insideThresh
     outsideTemp = _outsideTemp()

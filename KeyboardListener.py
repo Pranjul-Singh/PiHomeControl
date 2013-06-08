@@ -28,8 +28,12 @@ def listen():
             if charInput == "\r":
                 charInput = "H"
                 modifier = None
+                config.stopAway()
             elif charInput == "0":
                 modifier = None
+                config.startAway()
+            else:
+                config.stopAway()
             executeMacro(charInput, modifier)
             modifier = None
             modTimer = datetime.min
@@ -41,9 +45,7 @@ def executeMacro(key, modifier):
         HueBridge.sendCommandToGroup(0, config.lightCommands.get("Off"))
         AirCon.turnOff("AC-LR")
         AirCon.turnOff("AC-BED")
-        config.startAway()
     elif key == "H":
-        config.stopAway()
         lightSettings = config.lightGroup.get("H")
         HueBridge.sendCommand(lightSettings.get("lightsOn"), lightSettings.get("command"))
         AirCon.autoOn("AC-LR")

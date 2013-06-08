@@ -36,6 +36,8 @@ def main():
         KeyboardListener.listen()
 
         logging.info("Exiting.")
+        config.stopMonitor()
+        
     except Exception, e:
         logging.error("app::main Error Occured - Exiting: " + str(e))
     finally:

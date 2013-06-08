@@ -3,12 +3,12 @@ import phue
 import time
 import json
 import thread
-import PiGPIO
 import logging
 import KeyboardListener
-from datetime import datetime
+from datetime import datetime, timedelta
 
 away = False
+awayArmed = datetime.min
 
 itachIP = None
 hueBridgeIP = None
@@ -87,27 +87,69 @@ itachDevice = {
 _tMonitorLoop = False
 
 
+def doorCallback(gpio_id, val):
+    global isDoorOpen, away, lastKeyTime
+    if val == 1:
+        isDoorOpen = True
+        logging.info("Door opened.\r")
+        #x = timedelta(seconds=60) + lastKeyTime < datetime.now()
+        #logging.debug("Last Key At: " + str(lastKeyTime))
+        #logging.debug("Door Timer " + str(x) + "\r")
+        #if away is True and timedelta(seconds=10) + lastKeyTime < datetime.now():
+        if away is True:
+            away = False
+            KeyboardListener.executeMacro("H", None)
+            logging.info("[AWAY] Deactivated: Door\r")
+            ledToggle(False)
+    else:
+        isDoorOpen = False 
+        logging.info("Door closed.\r")
+
+
 def startMonitor():
     global _tMonitorLoop, isDoorOpen
     if _tMonitorLoop is True:
-        logging.info("System Status Monitor Already Running")
+        logging.warn("System Status Monitor Already Running")
     else:
+        ledToggle(False)
+        logging.info("Starting system status monitor.")
         _tMonitorLoop = True
         logger = logging.getLogger('')
         thread.start_new_thread( _getHubStatus, (logger,))
-    thread.start_new_thread( _watchDoor, (logger,))
-
+        try:
+            logging.info("Starting door watcher.")
+            import RPIO
+            RPIO.add_interrupt_callback(23, doorCallback, pull_up_down=RPIO.PUD_UP)
+            RPIO.wait_for_interrupts(threaded=True, epoll_timeout=0.5)
+            RPIO.setup(23, RPIO.IN, pull_up_down=RPIO.PUD_UP)
+            if RPIO.input(23) is True:
+                isDoorOpen = True
+                logging.info("Door watcher running, door is open.")
+            else:
+                isDoorOpen = False
+                logging.info("Door watcher running, door is closed.")
+        except Exception, e:
+            logging.warn("Unable to start door watcher: " + str(e))
+    
 
 def stopMonitor():
     global _tMonitorLoop
+    logging.info("Stopping system status monitor.")
     _tMonitorLoop = False
+    try:
+        import RPIO
+        RPIO.del_interrupt_callback(23)
+        logging.info("Stopped door watcher.")
+    except:
+        pass
+    logging.info("Stopped system status monitor.")
 
 
 def _getHubStatus(logger):
     global hueBridgeIP, hueAppID, _tMonitorLoop, acStatus, away
     global itachIP, hueBridgeIP, isDoorOpen, insideTemperature
 
-    logger.info("Starting system status monitor.\r")
+    logger.info("Starting Hue bridge monitor.\r")
 
     bridge = phue.Bridge(ip=hueBridgeIP, username=hueAppID)
 
@@ -123,37 +165,54 @@ def _getHubStatus(logger):
         data = json.dumps(data)
         with open("status.json", "w") as text_file:
             text_file.write(data)
-        time.sleep(10)
+        time.sleep(5)
 
 
 def startAway():
-    global away
+    global away, awayArmed
     if away is True:
-        logging.info("[AWAY] Already Activated.")
+        logging.info("[AWAY] Already activated.")
     else:
-        logging.info("[AWAY] Activated.")
-        away = True
-        logger = logging.getLogger('')
-        # thread.start_new_thread( _listenForDoor, (logger,))
+        logging.info("[AWAY]A System arming.")
+        awayArmed = datetime.now() + timedelta(seconds=10)
+        thread.start_new_thread( _armAway, (logging.getLogger(''),))
 
 
 def stopAway():
-    logging.info("[AWAY] Deactivated: Keyboard")
-    global away
-    away = False
+    global away, awayArmed
+    awayArmed = datetime.min
+    if away is True:
+        logging.info("[AWAY] Deactivated: Keyboard")
+        away = False
+        ledToggle(False)
 
 
-def _watchDoor(logger):
-    global isDoorOpen, away
+def _armAway(logger):
+    global away, awayArmed
+    try:
+        count = 0
+        while datetime.now() < awayArmed:
+            ledToggle(bool(count % 2))
+            count = count + 1
+            time.sleep(0.5)
+        if awayArmed is not datetime.min:
+            away = True
+            ledToggle(True)
+            logging.info("[AWAY] System activated.\r")
+        else:
+            ledToggle(False)
+        
+    except Exception, e:
+        logging.info("Arm Away Error " + str(e) + "\r")
+        pass
 
-    while True:
-        newDoorStatus = PiGPIO.isDoorOpen()
-        if newDoorStatus is not isDoorOpen:
-            isDoorOpen = newDoorStatus
-            if isDoorOpen is True:
-                logger.info("Door opened.")
-                if away:
-                    KeyboardListener.executeMacro("H")
-            else:
-                logger.info("Door closed.")
-        time.sleep(0.5)
+
+def ledToggle(pwr):
+    try:
+        import RPIO
+        RPIO.setwarnings(False)
+        RPIO.setup(24, RPIO.OUT)
+        RPIO.output(24, pwr)
+    except Exception, e:
+        pass
+

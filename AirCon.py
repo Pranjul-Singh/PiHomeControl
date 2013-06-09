@@ -58,8 +58,11 @@ def autoOn(device):
     if insideExceeds or outsideExceeds:
         deviceCommands = config.itachDevice.get(device)
         if deviceCommands is not None:
+            logging.info("[" + device + "] -> On")
             _sendCommand(deviceCommands.get("On"))
-            _sendCommand(str(config.acSettings.get("DefaultTemp")))
+            defaultTemp = config.acSettings.get("DefaultTemp")
+            logging.info("[" + device + "] -> " + str(defaultTemp))
+            _sendCommand(deviceCommands.get(str(defaultTemp)))
             config.acStatus[device] = {"Running": True, "Temperature": config.acSettings.get("DefaultTemp")}
 
 

@@ -30,7 +30,7 @@
 		    <div class="tab-pane active" id="tabGeneral">
 		      <table class="table table-striped">
 		      	<tr>
-		      		<td>Last Updated</td><td id="piUpdated"></td>
+		      		<td style="min-width:150px;">Last Updated</td><td id="piUpdated"></td>
 		      	</tr>
 		      	<tr>
 		      		<td>Door</td><td><span class="label" id="piDoor"></span></td>
@@ -51,6 +51,10 @@
 		      	<tr>
 		      		<td>Inside Temperature</td>
 		      		<td><span class="badge" id="piTempInside"></span></td>
+		      	</tr>
+		      	<tr>
+		      		<td>Outside Temperature</td>
+		      		<td><span class="badge" id="piTempOutside"></span></td>
 		      	</tr>
 					</table>
 		    </div>
@@ -80,59 +84,64 @@
 	<script src="//google-code-prettify.googlecode.com/svn/loader/prettify.js"></script>
 	<script type="text/javascript">
 
-		$.ajax({
-  		url: "status.json?x=1"
-		}).done(function(status) {
-			console.log(status);
-			$("#jsonHue").text(JSON.stringify(status.config, undefined, 2));
-			$("#jsonLights").text(JSON.stringify(status.lights, undefined, 2));
-			$("#jsonAC").text(JSON.stringify(status.airConditioners, undefined, 2));
-			$("#jsonAll").text(JSON.stringify(status, undefined, 2));
-			$("#piUpdated").text(status.updatedAt);
-			$("#piITachIP").text(status.itachIP);
-			$("#piHueIP").text(status.hueBridgeIP);
-			if (status.isDoorOpen) {
-				console.log(status.isDoorOpen)
-				$("#piDoor").text("Open").addClass("label-important")
-			} else {
-				$("#piDoor").text("Closed").addClass("label-success")
-			}
-			if (status.away) {
-				console.log(status.away)
-				$("#piAway").text("Away").addClass("label-important")
-			} else {
-				$("#piAway").text("Home").addClass("label-success")
-			}
-			if (status.insideTemperature == -1) {
-
-			} else if (status.insideTemperature < 40) {
-				$("#piTempInside").addClass("badge-info");
-			} else if (status.insideTemperature < 60) {
-				$("#piTempInside").addClass("badge-warning");
-			} else if (status.insideTemperature < 75) {
-				$("#piTempInside").addClass("badge-success");
-			} else if (status.insideTemperature < 85) {
-				$("#piTempInside").addClass("badge-warning");
-			} else {
-				$("#piTempInside").addClass("badge-important");
-			}
-			$("#piTempInside").text(status.insideTemperature);
-			var i = 1;
-			while (status.lights[i]) {
-				var light = status.lights[i];
-				var item = $("<span class='badge'></span>");
-				item.text(light.name)
-				if (light.state.on) {
-					item.addClass("badge-success");
+		function updateData() {
+			$.ajax({
+	  		url: "status.json?x=1"
+			}).done(function(status) {
+				$("#jsonHue").text(JSON.stringify(status.config, undefined, 2));
+				$("#jsonLights").text(JSON.stringify(status.lights, undefined, 2));
+				$("#jsonAC").text(JSON.stringify(status.airConditioners, undefined, 2));
+				$("#jsonAll").text(JSON.stringify(status, undefined, 2));
+				$("#piUpdated").text(status.updatedAt);
+				$("#piITachIP").text(status.itachIP);
+				$("#piHueIP").text(status.hueBridgeIP);
+				if (status.isDoorOpen) {
+					$("#piDoor").text("Open").addClass("label-important")
 				} else {
-					item.addClass("badge-inverse");
+					$("#piDoor").text("Closed").addClass("label-success")
 				}
-				$("#lightList").append(item);
-				i++;
-			}
-  		prettyPrint()
-  		window.pi = status;
-		});
+				if (status.away) {
+					$("#piAway").text("Away").addClass("label-important")
+				} else {
+					$("#piAway").text("Home").addClass("label-success")
+				}
+				if (status.insideTemperature == -1) {
+
+				} else if (status.insideTemperature < 40) {
+					$("#piTempInside").addClass("badge-info");
+				} else if (status.insideTemperature < 60) {
+					$("#piTempInside").addClass("badge-warning");
+				} else if (status.insideTemperature < 75) {
+					$("#piTempInside").addClass("badge-success");
+				} else if (status.insideTemperature < 85) {
+					$("#piTempInside").addClass("badge-warning");
+				} else {
+					$("#piTempInside").addClass("badge-important");
+				}
+				$("#piTempInside").text(status.insideTemperature);
+				$("#piTempOutside").text(status.outsideTemperature);
+				var i = 1;
+				var lightContainer = $("<span></span>")
+				while (status.lights[i]) {
+					var light = status.lights[i];
+					var item = $("<span class='badge'></span>");
+					item.text(light.name)
+					if (light.state.on) {
+						item.addClass("badge-success");
+					} else {
+						item.addClass("badge-inverse");
+					}
+					lightContainer.append(item);
+					i++;
+				}
+				$("#lightList").html(lightContainer);
+	  		prettyPrint()
+	  		window.pi = status;
+			});
+		}
+
+		updateData();
+		setInterval(updateData, 10000);
 
 	</script>
 </body>

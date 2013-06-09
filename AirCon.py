@@ -18,7 +18,6 @@ def _sendCommand(command):
             response = s.recv(1024)
             logging.info(" <- " + str(response))
             s.close()
-            time.sleep(1)
     except Exception, e:
         logging.error("Error sending IR command: " + command)
         logging.error("Error: " + str(e))
@@ -35,12 +34,14 @@ def turnOff(device):
 
 
 def turnOn(device):
-    logging.info("[" + device + "] -> On")
     deviceCommands = config.itachDevice.get(device)
     if deviceCommands is not None:
+        logging.info("[" + device + "] -> On")
         _sendCommand(deviceCommands.get("On"))
-        _sendCommand(str(config.acSettings.get("DefaultTemp")))
-        config.acStatus[device] = {"Running": True, "Temperature": config.acSettings.get("DefaultTemp")}
+        defaultTemp = config.acSettings.get("DefaultTemp")
+        logging.info("[" + device + "] -> " + str(defaultTemp))
+        _sendCommand(deviceCommands.get(str(defaultTemp)))
+        config.acStatus[device] = {"Running": True, "Temperature": defaultTemp}
     else:
         logging.info("  Error - AirCon::turnOff: Device Not Found")
 
@@ -63,7 +64,7 @@ def autoOn(device):
             defaultTemp = config.acSettings.get("DefaultTemp")
             logging.info("[" + device + "] -> " + str(defaultTemp))
             _sendCommand(deviceCommands.get(str(defaultTemp)))
-            config.acStatus[device] = {"Running": True, "Temperature": config.acSettings.get("DefaultTemp")}
+            config.acStatus[device] = {"Running": True, "Temperature": defaultTemp}
 
 
 def increaseTemp(device):

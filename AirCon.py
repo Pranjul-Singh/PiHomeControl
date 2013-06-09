@@ -23,12 +23,32 @@ def _sendCommand(command):
         logging.error("Error: " + str(e))
 
 
+def controller(device, command):
+    logging.debug("AC Controller: [" + device + "] -> " + str(command))
+    if command == "Off":
+        turnOff(device)
+    elif command == "AC-UP" and config.acStatus[device] is not "OFF":
+        increaseTemp(device)
+    elif command == "AC-DOWN" and config.acStatus[device] is not "OFF":
+        decreaseTemp(device)
+    elif config.acStatus[device]["mode"] == "OFF":
+        turnOn(device)        
+    # elif config.acStatus[device]["mode"] == "OFF" or config.acStatus[device]["mode"] == "DEH":
+    #     turnOn(device)
+    # elif config.acStatus[device]["mode"] == "ON":
+    #     turnOnFan(device)
+    # elif config.acStatus[device]["mode"] == "FAN":
+    #     turnOnDeh(device)
+
+
 def turnOff(device):
     logging.info("[" + device + "] -> Off")
     deviceCommands = config.itachDevice.get(device)
     if deviceCommands is not None:
         _sendCommand(deviceCommands.get("Off"))
-        config.acStatus[device] = {"Running": False, "Temperature": config.acSettings.get("DefaultTemp")}
+        config.acStatus[device]["mode"] = "OFF"
+        config.acStatus[device]["temperature"] = -1
+        config.acStatus[device]["fan"] = "OFF"
     else:
         logging.info("  Error - AirCon::turnOff: Device Not Found")
 
@@ -41,7 +61,9 @@ def turnOn(device):
         defaultTemp = config.acSettings.get("DefaultTemp")
         logging.info("[" + device + "] -> " + str(defaultTemp))
         _sendCommand(deviceCommands.get(str(defaultTemp)))
-        config.acStatus[device] = {"Running": True, "Temperature": defaultTemp}
+        config.acStatus[device]["mode"] = "ON"
+        config.acStatus[device]["temperature"] = defaultTemp
+        config.acStatus[device]["fan"] = "OFF"
     else:
         logging.info("  Error - AirCon::turnOff: Device Not Found")
 
@@ -64,30 +86,56 @@ def autoOn(device):
             defaultTemp = config.acSettings.get("DefaultTemp")
             logging.info("[" + device + "] -> " + str(defaultTemp))
             _sendCommand(deviceCommands.get(str(defaultTemp)))
-            config.acStatus[device] = {"Running": True, "Temperature": defaultTemp}
+            config.acStatus[device]["mode"] = "ON"
+            config.acStatus[device]["temperature"] = defaultTemp
+            config.acStatus[device]["fan"] = "OFF"
+
+
+# def turnOnFan(device):
+#     deviceCommands = config.itachDevice.get(device)
+#     if deviceCommands is not None:
+#         logging.info("[" + device + "] -> Fan On")
+#         _sendCommand(deviceCommands.get("FanOn"))
+#         config.acStatus[device]["mode"] = "FAN"
+#         config.acStatus[device]["temperature"] = -1
+#         config.acStatus[device]["fan"] = "MEDIUM"
+#     else:
+#         logging.info("  Error - AirCon::turnOnFan: Device Not Found")
+
+
+
+# def turnOnDeh(device):
+#     deviceCommands = config.itachDevice.get(device)
+#     if deviceCommands is not None:
+#         logging.info("[" + device + "] -> Dehumidifier On")
+#         _sendCommand(deviceCommands.get("DehumidifierOn"))
+#         config.acStatus[device]["mode"] = "DEH"
+#         config.acStatus[device]["temperature"] = 70
+#         config.acStatus[device]["fan"] = "OFF"
+#     else:
+#         logging.info("  Error - AirCon::turnOnDeh: Device Not Found")
 
 
 def increaseTemp(device):
     status = config.acStatus.get(device)
     if status is not None:
-        if status.get("Running") is True:
-            newTemp = status.get("Temperature") + 1
+        if status.get("mode") is "ON":
+            newTemp = status.get("temperature") + 1
             command = config.itachDevice.get(device).get(str(newTemp))
             if command is not None:
                 _sendCommand(command)
-                config.acStatus[device]["Temperature"] = newTemp
+                config.acStatus[device]["temperature"] = newTemp
                 logging.info("[" + device + "] -> {" + str(newTemp) + "}")
-                logging.info(config.acStatus[device]["Temperature"])
-
+                
 
 def decreaseTemp(device):
     status = config.acStatus.get(device)
     if status is not None:
-        if status.get("Running") is True:
-            newTemp = status.get("Temperature") - 1
+        if status.get("mode") is "ON":
+            newTemp = status.get("temperature") - 1
             command = config.itachDevice.get(device).get(str(newTemp))
             if command is not None:
                 _sendCommand(command)
-                config.acStatus[device]["Temperature"] = newTemp
+                config.acStatus[device]["temperature"] = newTemp
                 logging.info("[" + device + "] -> {" + str(newTemp) + "}")
-                logging.info(config.acStatus[device]["Temperature"])
+                

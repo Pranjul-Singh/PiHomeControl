@@ -51,10 +51,11 @@ def executeMacro(key, modifier):
         AirCon.autoOn("AC-LR")
         if datetime.now().hour > 21:
             AirCon.autoOn("AC-BED")
-    elif key == "-":
-        AirCon.decreaseTemp("AC-LR")
-    elif key == "+":
-        AirCon.increaseTemp("AC-LR")
+    elif key == "8" or key == "9" or modifier == "AC-UP" or modifier == "AC-DOWN":
+        if key == "8":
+            AirCon.controller("AC-LR", modifier)
+        elif key == "9":
+            AirCon.controller("AC-BED", modifier)
     else:
         lightSettings = config.lightGroup.get(key)
         if lightSettings is not None:

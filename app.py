@@ -22,14 +22,17 @@ def main():
         logging.info("Searching local network for Global Cache iTach...")
         config.itachIP = UDPListener.search("239.255.250.250", 9131,
             ["AMXB<-UUID=GlobalCache_", "<-Model=iTachIP2IR>", "<-Status=Ready>"])
+        # config.itachIP = "192.168.1.150"
         logging.info("iTach IP: [" + str(config.itachIP) + "]")
 
         logging.info("Searching local network for Philips Hue Bridge...")
         config.hueBridgeIP = UDPListener.search("239.255.255.250", 1900,
             ["NOTIFY * HTTP/1.1", ":80/description.xml"])
+        # config.hueBridgeIP = "192.168.1.17"
         logging.info("Hue Bridge IP: [" + str(config.hueBridgeIP) + "]")
 
         config.startMonitor()
+        config.initAC()
 
         logging.info("Ready.")
 

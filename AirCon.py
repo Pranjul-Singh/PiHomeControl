@@ -1,25 +1,8 @@
 import json
+import time
 import socket
 import config
-import httplib
 import logging
-
-
-#def turnAirConOn(device, ext_temp, set_temp):
-
-def _outsideTemp():
-    try:
-        conn = httplib.HTTPConnection("api.wunderground.com")
-        conn.request("GET", "/api/KEY/conditions/q/40.69748809317884,-73.98093841395088.json")
-        r1 = conn.getresponse()
-        w = json.loads(r1.read())
-        conn.close()
-        curTemp = int(w.get("current_observation").get("temp_f"))
-        return curTemp
-    except Exception, e:
-        pass
-        logging.error("Unable to get outdoor temperature. " + str(e))
-        return -1
 
 
 def _sendCommand(command):
@@ -35,8 +18,10 @@ def _sendCommand(command):
             response = s.recv(1024)
             logging.info(" <- " + str(response))
             s.close()
+            time.sleep(1)
     except Exception, e:
-        logging.error("Error sending IR command: " + str(e))
+        logging.error("Error sending IR command: " + command)
+        logging.error("Error: " + str(e))
 
 
 def turnOff(device):
@@ -61,11 +46,10 @@ def turnOn(device):
 
 
 def autoOn(device):
-    #insideTemp = PiGPIO.insideTemperature()
-    insideTemp = -1
+    insideTemp = config.insideTemperature()
     insideThresh = config.acSettings.get("InsideThreshold")
     insideExceeds = insideTemp > insideThresh
-    outsideTemp = _outsideTemp()
+    outsideTemp = config.outsideTemperature(False)
     outsideThresh = config.acSettings.get("OutsideThreshold")
     outsideExceeds = outsideTemp > outsideThresh
     logging.info("[" + device + "] -> Auto")

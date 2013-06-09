@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+import os
+import glob
 import phue
 import time
 import json
 import thread
 import logging
+import httplib
 import KeyboardListener
 from datetime import datetime, timedelta
 
@@ -19,7 +22,8 @@ hueBridgeIP = None
 hueAppID = "9075e416a7d67c2f6c7d9386dff2e591"
 
 isDoorOpen = False
-insideTemperature = -1
+
+_outsideTemperature = {"temp": -1, "time": datetime.min}
 
 lightGroup = {
     "1": {"name": "Front Hall", "lightsOn": [7], "command": {"on": True, "bri": 254, "ct": 369}},
@@ -119,6 +123,7 @@ def startMonitor():
         logging.info("Starting system status monitor.")
         _tMonitorLoop = True
         logger = logging.getLogger('')
+        initTempSensor()
         thread.start_new_thread( _getHubStatus, (logger,))
         try:
             logging.info("Starting door watcher.")
@@ -164,7 +169,8 @@ def _getHubStatus(logger):
         data["away"] = away
         data["airConditioners"] = acStatus
         data["isDoorOpen"] = isDoorOpen
-        data["insideTemperature"] = insideTemperature
+        data["insideTemperature"] = insideTemperature()
+        data["outsideTemperature"] = outsideTemperature()
         data["updatedAt"] = str(datetime.now())
         data = json.dumps(data)
         with open("status.json", "w") as text_file:
@@ -177,8 +183,8 @@ def startAway():
     if away is True:
         logging.info("[AWAY] Already activated.")
     else:
-        logging.info("[AWAY]A System arming.")
-        awayArmed = datetime.now() + timedelta(seconds=10)
+        logging.info("[AWAY] System arming.")
+        awayArmed = datetime.now() + timedelta(seconds=60)
         thread.start_new_thread( _armAway, (logging.getLogger(''),))
 
 
@@ -220,3 +226,56 @@ def ledToggle(pwr):
     except Exception, e:
         pass
 
+
+def outsideTemperature(cached=True):
+    try:
+        last_updated = (datetime.now() - _outsideTemperature["time"]).total_seconds()
+        if cached is True and last_updated < (60*30):
+            return _outsideTemperature["temp"]
+        conn = httplib.HTTPConnection("api.wunderground.com")
+        conn.request("GET", "/api/KEY/conditions/q/40.69748809317884,-73.98093841395088.json")
+        r1 = conn.getresponse()
+        w = json.loads(r1.read())
+        conn.close()
+        _outsideTemperature["temp"] = int(w.get("current_observation").get("temp_f"))
+        _outsideTemperature["time"] = datetime.now()
+        logging.info("Outside Temperature: " + str(_outsideTemperature["temp"]) + "\r")
+        return _outsideTemperature["temp"]
+    except Exception, e:
+        pass
+        logging.error("Unable to get outdoor temperature. " + str(e) + "\r")
+        return -1
+
+
+def initTempSensor():
+    try:
+        logging.info("Initalizing indoor temperature sensor.")
+        os.system('modprobe w1-gpio')
+        os.system('modprobe w1-therm')
+         
+        base_dir = '/sys/bus/w1/devices/'
+        device_folder = glob.glob(base_dir + '28*')[0]
+        device_file = device_folder + '/w1_slave'
+        logging.info("Indoor temperature sensor ready.")
+        return True
+    except Exception, e:
+        logging.error("Indoor temperature sensor error. " + str(e))
+        return False
+
+
+def insideTemperature():
+    try:
+        f = open(device_file, 'r')
+        lines = f.readlines()
+        f.close()
+        while lines[0].strip()[-3:] != 'YES':
+            time.sleep(0.2)
+            lines = read_temp_raw()
+        equals_pos = lines[1].find('t=')
+        if equals_pos != -1:
+            temp_string = lines[1][equals_pos+2:]
+            temp_c = float(temp_string) / 1000.0
+            temp_f = temp_c * 9.0 / 5.0 + 32.0
+            return temp_f
+    except:
+        return -1

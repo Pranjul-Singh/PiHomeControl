@@ -161,7 +161,7 @@ def _getHubStatus(logger):
         data = bridge.get_api()
         data["itachIP"] = itachIP
         data["hueBridgeIP"] = hueBridgeIP
-        data["away"] = str(away)
+        data["away"] = away
         data["airConditioners"] = acStatus
         data["isDoorOpen"] = isDoorOpen
         data["insideTemperature"] = insideTemperature

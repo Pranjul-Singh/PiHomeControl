@@ -51,7 +51,7 @@ def executeMacro(key, modifier):
         AirCon.autoOn("AC-LR")
         if datetime.now().hour > 21:
             AirCon.autoOn("AC-BED")
-    elif key == "8" or key == "9" or modifier == "AC-UP" or modifier == "AC-DOWN":
+    elif key == "8" or key == "9":
         if key == "8":
             AirCon.controller("AC-LR", modifier)
         elif key == "9":
@@ -63,6 +63,9 @@ def executeMacro(key, modifier):
             lightOff = lightSettings.get("lightsOff")
             if modifier is not None:
                 lightCommand = config.lightCommands.get(modifier)
+            elif modifier == "UP" or modifier == "DOWN":
+                ## TODO: Update code block here
+                pass
             else:
                 lightCommand = lightSettings.get("command")
             if lightOff:

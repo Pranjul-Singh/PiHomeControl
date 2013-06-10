@@ -25,6 +25,7 @@ hueAppID = "9075e416a7d67c2f6c7d9386dff2e591"
 isDoorOpen = False
 
 _outsideTemperature = {"temp": -1, "time": datetime.min}
+_tempSensorPath = ""
 
 lightGroup = {
     "1": {"name": "Front Hall", "lightsOn": [7], "command": {"on": True, "bri": 254, "ct": 369}},
@@ -45,8 +46,8 @@ keyModifier = {
     "*": "NightRed",
     "\x7f": "DimWhite",
     ".": "Energize",
-    "+": "AC-UP",
-    "-": "AC-DOWN"
+    "+": "UP",
+    "-": "DOWN"
 }
 
 lightCommands = {
@@ -179,7 +180,7 @@ def stopMonitor():
 
 
 def _getHubStatus(logger):
-    global hueBridgeIP, hueAppID, _tMonitorLoop, acStatus, away
+    global hueBridgeIP, hueAppID, hueHubStatus, _tMonitorLoop, acStatus, away
     global itachIP, hueBridgeIP, isDoorOpen, insideTemperature
 
     logger.info("Starting Hue bridge monitor.\r")
@@ -188,6 +189,7 @@ def _getHubStatus(logger):
 
     while _tMonitorLoop:
         data = bridge.get_api()
+        hueHubStatus = data
         data["itachIP"] = itachIP
         data["hueBridgeIP"] = hueBridgeIP
         data["away"] = away
@@ -236,7 +238,7 @@ def _armAway(logger):
             logging.info("[AWAY] System activated.\r")
         else:
             ledToggle(False)
-        
+
     except Exception, e:
         logging.info("Arm Away Error " + str(e) + "\r")
         pass
@@ -273,14 +275,14 @@ def outsideTemperature(cached=True):
 
 
 def initTempSensor():
+    global _tempSensorPath
     try:
         logging.info("Initalizing indoor temperature sensor.")
         os.system('modprobe w1-gpio')
         os.system('modprobe w1-therm')
-         
         base_dir = '/sys/bus/w1/devices/'
         device_folder = glob.glob(base_dir + '28*')[0]
-        device_file = device_folder + '/w1_slave'
+        _tempSensorPath = device_folder + '/w1_slave'
         logging.info("Indoor temperature sensor ready.")
         return True
     except Exception, e:
@@ -288,14 +290,24 @@ def initTempSensor():
         return False
 
 
-def insideTemperature():
+def _readTemperatureSensor():
+    global _tempSensorPath
     try:
-        f = open(device_file, 'r')
+        f = open(_tempSensorPath, 'r')
         lines = f.readlines()
         f.close()
+        return lines
+    except Exception, e:
+        logging.error("Unable to read indoor temperature sensor: " + str(e))
+        return ""
+
+
+def insideTemperature():
+    try:
+        lines = _readTemperatureSensor()
         while lines[0].strip()[-3:] != 'YES':
             time.sleep(0.2)
-            lines = read_temp_raw()
+            lines = _readTemperatureSensor()
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
             temp_string = lines[1][equals_pos+2:]

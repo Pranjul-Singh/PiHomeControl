@@ -12,8 +12,6 @@ def getTemp():
     _humidity = None
     _errors = 0
     while _temp is None or _humidity is None:
-        print str(_temp)
-        print str(_humidity)
         try:
             output = subprocess.check_output(["./Adafruit_DHT", "2302", "4"]);
             matches = re.search("Temp =\s+([0-9.]+)", output)

@@ -15,7 +15,7 @@ def listen():
 
     while runLoop:
         charInput = GetCh()
-        if modTimer + timedelta(seconds=3) < datetime.now():
+        if modTimer + timedelta(seconds=4) < datetime.now():
             modifier = None
             modTimer = datetime.min
         if charInput == "q":
@@ -61,11 +61,17 @@ def executeMacro(key, modifier):
         if lightSettings is not None:
             lightOn = lightSettings.get("lightsOn")
             lightOff = lightSettings.get("lightsOff")
-            if modifier is not None:
+            if modifier == "UP" or modifier == "DOWN":
+                dimQty = 12
+                curBri = HueBridge.getBrightness(lightOn[0])
+                if modifier == "UP" and curBri <= (254 - dimQty):
+                    lightCommand = {"bri": curBri + dimQty}
+                elif modifier == "DOWN" and curBri > dimQty:
+                    lightCommand = {"bri": curBri - dimQty}
+                else:
+                    lightCommand = {"bri": curBri}
+            elif modifier is not None:
                 lightCommand = config.lightCommands.get(modifier)
-            elif modifier == "UP" or modifier == "DOWN":
-                ## TODO: Update code block here
-                pass
             else:
                 lightCommand = lightSettings.get("command")
             if lightOff:

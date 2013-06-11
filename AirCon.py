@@ -27,12 +27,12 @@ def controller(device, command):
     logging.debug("AC Controller: [" + device + "] -> " + str(command))
     if command == "Off":
         turnOff(device)
-    elif command == "AC-UP" and config.acStatus[device] is not "OFF":
+    elif command == "UP" and config.acStatus[device] is not "OFF":
         increaseTemp(device)
-    elif command == "AC-DOWN" and config.acStatus[device] is not "OFF":
+    elif command == "DOWN" and config.acStatus[device] is not "OFF":
         decreaseTemp(device)
     elif config.acStatus[device]["mode"] == "OFF":
-        turnOn(device)        
+        turnOn(device)    
     # elif config.acStatus[device]["mode"] == "OFF" or config.acStatus[device]["mode"] == "DEH":
     #     turnOn(device)
     # elif config.acStatus[device]["mode"] == "ON":

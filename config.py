@@ -25,7 +25,7 @@ hueAppID = "9075e416a7d67c2f6c7d9386dff2e591"
 isDoorOpen = False
 
 _outsideTemperature = {"temp": -1, "time": datetime.min}
-_tempSensorPath = ""
+_tempSensorPath = None
 
 lightGroup = {
     "1": {"name": "Front Hall", "lightsOn": [7], "command": {"on": True, "bri": 254, "ct": 369}},
@@ -108,10 +108,6 @@ def doorCallback(gpio_id, val):
     if val == 1:
         isDoorOpen = True
         logging.info("Door opened.\r")
-        #x = timedelta(seconds=60) + lastKeyTime < datetime.now()
-        #logging.debug("Last Key At: " + str(lastKeyTime))
-        #logging.debug("Door Timer " + str(x) + "\r")
-        #if away is True and timedelta(seconds=10) + lastKeyTime < datetime.now():
         if away is True:
             away = False
             KeyboardListener.executeMacro("H", None)
@@ -286,7 +282,7 @@ def initTempSensor():
         logging.info("Indoor temperature sensor ready.")
         return True
     except Exception, e:
-        logging.error("Indoor temperature sensor error. " + str(e))
+        logging.error("Indoor temperature sensor error. " + str(e) + "\r")
         return False
 
 
@@ -298,21 +294,25 @@ def _readTemperatureSensor():
         f.close()
         return lines
     except Exception, e:
-        logging.error("Unable to read indoor temperature sensor: " + str(e))
+        logging.error("Unable to read indoor temperature sensor: " + str(e) + "\r")
         return ""
 
 
 def insideTemperature():
+    global _tempSensorPath
     try:
-        lines = _readTemperatureSensor()
-        while lines[0].strip()[-3:] != 'YES':
-            time.sleep(0.2)
+        if _tempSensorPath is None:
+            return -1
+        else:
             lines = _readTemperatureSensor()
-        equals_pos = lines[1].find('t=')
-        if equals_pos != -1:
-            temp_string = lines[1][equals_pos+2:]
-            temp_c = float(temp_string) / 1000.0
-            temp_f = temp_c * 9.0 / 5.0 + 32.0
-            return temp_f
+            while lines[0].strip()[-3:] != 'YES':
+                time.sleep(0.2)
+                lines = _readTemperatureSensor()
+            equals_pos = lines[1].find('t=')
+            if equals_pos != -1:
+                temp_string = lines[1][equals_pos+2:]
+                temp_c = float(temp_string) / 1000.0
+                temp_f = temp_c * 9.0 / 5.0 + 32.0
+                return temp_f
     except:
         return -1

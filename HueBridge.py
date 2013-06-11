@@ -54,28 +54,13 @@ def turnLightsOff(lights):
         logging.error("  HueBridge::turnLightsOff: " + str(e))
 
 
-## TODO Finish up this section!!!
-def adjustBrightness(lights, direction):
+def getBrightness(light):
     global _bridge
-    logging.info(str(lights) + " -> Brightness: " + direction)
     try:
         _checkBridge()
         if _bridge is None:
-            logging.error("  HueBridge::sendCommand: No Bridge Available")
+            logging.error("  HueBridge::getBrightness: No Bridge Available")
         else:
-            for light in lights:
-                try:
-                    currentBrightness = config.hueHubStatus.get("lights").get(light).get("status").get("bri")
-                    if direction == "UP" and currentBrightness <= 249:
-                        currentBrightness += 5
-                        logging.info("New brightness: " + str(currentBrightness))
-                    elif direction == "DOWN" and currentBrightness >= 6:
-                        currentBrightness -= 5
-                        logging.info("New brightness: " + str(currentBrightness))
-                    else:
-                        logging.warn("  HueBridge::adjustBrightness: No direction specified.")
-                except:
-                    logging.warn("  HueBridge::adjustBrightness: Couldn't get current light brightness for light: " + str(light))
+            return _bridge.get_light(light, "bri")
     except Exception, e:
-        logging.error("  HueBridge::adjustBrightness: " + str(e))
-
+        logging.error("  HueBridge::getBrightness: " + str(e))    

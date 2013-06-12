@@ -1,0 +1,10 @@
+Info about Google Voice Data: http://google.com/voice/request/messages
+if i am home and there is a new message:
+  if overhead lights are on:
+    breathe once
+  turn 1 ikea light blue
+
+
+Channel API stuff: https://developers.google.com/appengine/docs/python/channel/
+
+Python HTTP Server: http://docs.python.org/2/library/simplehttpserver.html

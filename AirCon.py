@@ -1,19 +1,50 @@
-import json
-import time
 import socket
-import config
+import SystemStatus
 import logging
+
+_defaultTemp = 71
+_insideThresh = 73
+_outsideThresh = 75
+
+_itachDevice = {
+    "AC-LR": {
+        "On": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,61,21,3799",
+        "Off": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,3799",
+        "66": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,21,21,61,21,61,21,61,21,21,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,3799",
+        "67": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,3799",
+        "68": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,61,21,3799",
+        "69": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,61,21,21,21,3799",
+        "70": "sendir,1:2,1,37878,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,61,21,61,21,21,21,21,21,61,21,21,21,21,21,61,21,61,21,61,21,3787",
+        "71": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,3799",
+        "72": "sendir,1:2,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,21,21,61,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,61,21,3799",
+        "FanOn": "version",
+        "DehumidifierOn": "version"
+    },
+    "AC-BED": {
+        "On": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,61,21,3799",
+        "Off": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,3799",
+        "66": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,21,21,61,21,61,21,61,21,21,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,3799",
+        "67": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,3799",
+        "68": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,61,21,3799",
+        "69": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,61,21,21,21,3799",
+        "70": "sendir,1:3,1,37878,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,21,21,61,21,61,21,21,21,21,21,61,21,21,21,21,21,61,21,61,21,61,21,3787",
+        "71": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,3799",
+        "72": "sendir,1:3,1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,21,21,61,21,61,21,21,21,61,21,21,21,21,21,61,21,21,21,61,21,21,21,21,21,61,21,3799",
+        "FanOn": "version",
+        "DehumidifierOn": "version"
+    }
+}
 
 
 def _sendCommand(command):
     try:
-        if config.itachIP is None:
+        if SystemStatus.itachIP is None:
             logging.error("  Error - AirCon::_sendComand: iTach Bridge Not Found")
         else:
             s = socket.socket()
             port = 4998
             s.settimeout(5)
-            s.connect((config.itachIP, port))
+            s.connect((SystemStatus.itachIP, port))
             s.send(command + "\r")
             response = s.recv(1024)
             logging.info(" <- " + str(response))
@@ -24,118 +55,82 @@ def _sendCommand(command):
 
 
 def controller(device, command):
+    status = SystemStatus.get().get("airConditioners").get(device)
     logging.debug("AC Controller: [" + device + "] -> " + str(command))
     if command == "Off":
         turnOff(device)
-    elif command == "UP" and config.acStatus[device] is not "OFF":
+    elif command == "UP" and status.get("mode") is not "OFF":
         increaseTemp(device)
-    elif command == "DOWN" and config.acStatus[device] is not "OFF":
+    elif command == "DOWN" and status.get("mode") is not "OFF":
         decreaseTemp(device)
-    elif config.acStatus[device]["mode"] == "OFF":
-        turnOn(device)    
-    # elif config.acStatus[device]["mode"] == "OFF" or config.acStatus[device]["mode"] == "DEH":
-    #     turnOn(device)
-    # elif config.acStatus[device]["mode"] == "ON":
-    #     turnOnFan(device)
-    # elif config.acStatus[device]["mode"] == "FAN":
-    #     turnOnDeh(device)
+    elif status.get("mode") == "OFF":
+        turnOn(device)
 
 
 def turnOff(device):
+    global _itachDevice
+
+    status = SystemStatus.get().get("airConditioners").get(device)
     logging.info("[" + device + "] -> Off")
-    deviceCommands = config.itachDevice.get(device)
+    deviceCommands = _itachDevice.get(device)
     if deviceCommands is not None:
         _sendCommand(deviceCommands.get("Off"))
-        config.acStatus[device]["mode"] = "OFF"
-        config.acStatus[device]["temperature"] = -1
-        config.acStatus[device]["fan"] = "OFF"
+        status["mode"] = "OFF"
+        status["temperature"] = -1
+        status["fan"] = "OFF"
     else:
         logging.info("  Error - AirCon::turnOff: Device Not Found")
 
 
 def turnOn(device):
-    deviceCommands = config.itachDevice.get(device)
+    global _itachDevice, _defaultTemp
+
+    status = SystemStatus.get().get("airConditioners").get(device)
+    logging.info("[" + device + "] -> On")
+    deviceCommands = _itachDevice.get(device)
     if deviceCommands is not None:
-        logging.info("[" + device + "] -> On")
         _sendCommand(deviceCommands.get("On"))
-        defaultTemp = config.acSettings.get("DefaultTemp")
-        logging.info("[" + device + "] -> " + str(defaultTemp))
-        _sendCommand(deviceCommands.get(str(defaultTemp)))
-        config.acStatus[device]["mode"] = "ON"
-        config.acStatus[device]["temperature"] = defaultTemp
-        config.acStatus[device]["fan"] = "OFF"
+        logging.info("[" + device + "] -> " + str(_defaultTemp))
+        _sendCommand(deviceCommands.get(str(_defaultTemp)))
+        status["mode"] = "ON"
+        status["temperature"] = _defaultTemp
+        status["fan"] = "OFF"
     else:
         logging.info("  Error - AirCon::turnOff: Device Not Found")
 
 
 def autoOn(device):
-    insideTemp = config.insideTemperature()
-    insideThresh = config.acSettings.get("InsideThreshold")
-    insideExceeds = insideTemp > insideThresh
-    outsideTemp = config.outsideTemperature(False)
-    outsideThresh = config.acSettings.get("OutsideThreshold")
-    outsideExceeds = outsideTemp > outsideThresh
+    global _itachDevice, _defaultTemp, _insideThresh, _outsideThresh
+
+    insideTemp = SystemStatus.get().get("insideTemperature")
+    insideExceeds = insideTemp > _insideThresh
+    outsideTemp = SystemStatus.get().get("outsideTemperature")
+    outsideExceeds = outsideTemp > _outsideThresh
     logging.info("[" + device + "] -> Auto")
-    logging.info(" Inside:  " + str(insideTemp) + " | " + str(insideThresh))
-    logging.info(" Outside: " + str(outsideTemp) + " | " + str(outsideThresh))
+    logging.info(" Inside:  " + str(insideTemp) + " | " + str(_insideThresh))
+    logging.info(" Outside: " + str(outsideTemp) + " | " + str(_outsideThresh))
     if insideExceeds or outsideExceeds:
-        deviceCommands = config.itachDevice.get(device)
-        if deviceCommands is not None:
-            logging.info("[" + device + "] -> On")
-            _sendCommand(deviceCommands.get("On"))
-            defaultTemp = config.acSettings.get("DefaultTemp")
-            logging.info("[" + device + "] -> " + str(defaultTemp))
-            _sendCommand(deviceCommands.get(str(defaultTemp)))
-            config.acStatus[device]["mode"] = "ON"
-            config.acStatus[device]["temperature"] = defaultTemp
-            config.acStatus[device]["fan"] = "OFF"
+        turnOn(device)
 
 
-# def turnOnFan(device):
-#     deviceCommands = config.itachDevice.get(device)
-#     if deviceCommands is not None:
-#         logging.info("[" + device + "] -> Fan On")
-#         _sendCommand(deviceCommands.get("FanOn"))
-#         config.acStatus[device]["mode"] = "FAN"
-#         config.acStatus[device]["temperature"] = -1
-#         config.acStatus[device]["fan"] = "MEDIUM"
-#     else:
-#         logging.info("  Error - AirCon::turnOnFan: Device Not Found")
-
-
-
-# def turnOnDeh(device):
-#     deviceCommands = config.itachDevice.get(device)
-#     if deviceCommands is not None:
-#         logging.info("[" + device + "] -> Dehumidifier On")
-#         _sendCommand(deviceCommands.get("DehumidifierOn"))
-#         config.acStatus[device]["mode"] = "DEH"
-#         config.acStatus[device]["temperature"] = 70
-#         config.acStatus[device]["fan"] = "OFF"
-#     else:
-#         logging.info("  Error - AirCon::turnOnDeh: Device Not Found")
+def decreaseTemp(device):
+    _changeTemp(device, "DOWN")
 
 
 def increaseTemp(device):
-    status = config.acStatus.get(device)
-    if status is not None:
-        if status.get("mode") is "ON":
-            newTemp = status.get("temperature") + 1
-            command = config.itachDevice.get(device).get(str(newTemp))
-            if command is not None:
-                _sendCommand(command)
-                config.acStatus[device]["temperature"] = newTemp
-                logging.info("[" + device + "] -> {" + str(newTemp) + "}")
-                
+    _changeTemp(device, "UP")
 
-def decreaseTemp(device):
-    status = config.acStatus.get(device)
+
+def _changeTemp(device, dir):
+    status = SystemStatus.get().get("airConditioners").get(device)
     if status is not None:
         if status.get("mode") is "ON":
-            newTemp = status.get("temperature") - 1
-            command = config.itachDevice.get(device).get(str(newTemp))
+            if dir == "UP":
+                newTemp = status.get("temperature") + 1
+            else:
+                newTemp = status.get("temperature") - 1
+            command = _itachDevice.get(device).get(str(newTemp))
             if command is not None:
                 _sendCommand(command)
-                config.acStatus[device]["temperature"] = newTemp
+                status["temperature"] = newTemp
                 logging.info("[" + device + "] -> {" + str(newTemp) + "}")
-                

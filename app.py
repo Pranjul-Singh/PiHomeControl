@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-import config
 import logging
+import HTTPServer
 import UDPListener
+import SystemStatus
 import KeyboardListener
 
 
@@ -20,27 +21,28 @@ def main():
         logging.info("App Start")
 
         logging.info("Searching local network for Global Cache iTach...")
-        config.itachIP = UDPListener.search("239.255.250.250", 9131,
+        SystemStatus.itachIP = UDPListener.search("239.255.250.250", 9131,
             ["AMXB<-UUID=GlobalCache_", "<-Model=iTachIP2IR>", "<-Status=Ready>"])
-        # config.itachIP = "192.168.1.150"
-        logging.info("iTach IP: [" + str(config.itachIP) + "]")
+        #SystemStatus.itachIP = "192.168.1.150"
+        logging.info("iTach IP: [" + str(SystemStatus.itachIP) + "]")
 
         logging.info("Searching local network for Philips Hue Bridge...")
-        config.hueBridgeIP = UDPListener.search("239.255.255.250", 1900,
+        SystemStatus.hueBridgeIP = UDPListener.search("239.255.255.250", 1900,
             ["NOTIFY * HTTP/1.1", ":80/description.xml"])
-        # config.hueBridgeIP = "192.168.1.17"
-        logging.info("Hue Bridge IP: [" + str(config.hueBridgeIP) + "]")
+        #SystemStatus.hueBridgeIP = "192.168.1.17"
+        logging.info("Hue Bridge IP: [" + str(SystemStatus.hueBridgeIP) + "]")
 
-        config.startMonitor()
-        config.initAC()
+        SystemStatus.start()
+
+        HTTPServer.start()
 
         logging.info("Ready.")
 
         KeyboardListener.listen()
 
         logging.info("Exiting.")
-        config.stopMonitor()
-        
+        SystemStatus.stop()
+
     except Exception, e:
         logging.error("app::main Error Occured - Exiting: " + str(e))
     finally:

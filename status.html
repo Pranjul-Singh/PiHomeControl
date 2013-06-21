@@ -89,17 +89,17 @@
 
 		function updateData() {
 			$.ajax({
-	  		url: "status.json?x=1"
-			}).done(function(status) {
-				$("#jsonHue").text(JSON.stringify(status.config, undefined, 2));
-				$("#jsonLights").text(JSON.stringify(status.lights, undefined, 2));
+	  		url: "http://192.168.1.201:8090/status"
+			}).done(function (status) {
+				$("#jsonHue").text(JSON.stringify(status.hueState, undefined, 2));
+				$("#jsonLights").text(JSON.stringify(status.hueState.lights, undefined, 2));
 				$("#jsonAC").text(JSON.stringify(status.airConditioners, undefined, 2));
 				$("#jsonAll").text(JSON.stringify(status, undefined, 2));
-				$("#piUpdated").text(status.updatedAt);
+				$("#piUpdated").text(new Date(status.systemTime));
 				$("#piITachIP").text(status.itachIP);
 				$("#piHueIP").text(status.hueBridgeIP);
-				$("#piUpTime").text(status.upTime);
-				if (status.isDoorOpen) {
+				$("#piUpTime").text(new Date(status.startTime));
+				if (status.doorOpen) {
 					$("#piDoor").text("Open").addClass("label-important")
 				} else {
 					$("#piDoor").text("Closed").addClass("label-success")
@@ -126,8 +126,8 @@
 				$("#piTempOutside").html(status.outsideTemperature + "&deg;");
 				var i = 1;
 				var lightContainer = $("<span></span>")
-				while (status.lights[i]) {
-					var light = status.lights[i];
+				while (status.hueState.lights[i]) {
+					var light = status.hueState.lights[i];
 					var item = $("<span class='badge'></span>");
 					item.text(light.name)
 					if (light.state.on) {
@@ -146,7 +146,7 @@
 		}
 
 		updateData();
-		setInterval(updateData, 10000);
+		setInterval(updateData, 3000);
 
 	</script>
 </body>

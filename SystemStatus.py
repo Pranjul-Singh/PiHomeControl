@@ -202,7 +202,7 @@ def _insideTempMonitor(logger):
   global _monitorLoop, _insideTemp
 
   errorTimer = 60
-  logger.info("Starting Google Voice message monitor.\r")
+  logger.info("Starting inside temperature monitor.\r")
   while _monitorLoop:
     try:
       _insideTemp = indoorTemp.get()
@@ -253,7 +253,7 @@ def _startGVoiceMonitor():
 
 def _gvoiceMonitor(logger):
   global _monitorLoop, _gVoiceMessages, _gVoiceLightOn, _isAway
-  
+
   errorTimer = 60
   logger.info("Starting Google Voice message monitor.\r")
   while _monitorLoop:
@@ -277,6 +277,7 @@ def _gvoiceMonitor(logger):
       except Exception, e:
         logger.error("Unable to get Google Voice message data: " + str(e) + "\r")
         _gVoiceMessages = json.loads('{"error": "' + str(e) + '"}')
+        macros.execute("GV", "NightRed")
         time.sleep(errorTimer)
         if errorTimer <= 600:
           errorTimer += 60

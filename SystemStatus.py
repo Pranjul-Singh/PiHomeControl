@@ -146,8 +146,7 @@ def _startDoorWatcher():
   try:
     logging.info("Starting door watcher.")
     import RPIO
-    RPIO.add_interrupt_callback(23, _doorCallback, pull_up_down=RPIO.PUD_UP)
-    RPIO.wait_for_interrupts(threaded=True, epoll_timeout=0.5)
+    thread.start_new_thread( _doorWatcher, (logging.getLogger(''),))
     RPIO.setup(23, RPIO.IN, pull_up_down=RPIO.PUD_UP)
     if RPIO.input(23) is True:
       _isDoorOpen = True
@@ -159,18 +158,32 @@ def _startDoorWatcher():
       logging.warn("Unable to start door watcher: " + str(e))
 
 
-def _doorCallback(gpio_id, val):
-  global _isDoorOpen, _isAway
-  if val == 1:
-    _isDoorOpen = True
-    logging.info("Door opened.\r")
-    if _isAway is True:
-      _isAway = False
-      KeyboardListener.executeMacro("H", None)
-      logging.info("[AWAY] Deactivated: Door\r")
-  else:
-    _isDoorOpen = False
-    logging.info("Door closed.\r")
+def _doorWatcher(logger):
+  global _isDoorOpen, _monitorLoop, _isAway
+
+  errorTimer = 60
+  while _monitorLoop:
+    try:
+      import RPIO
+      RPIO.setup(23, RPIO.IN, pull_up_down=RPIO.PUD_UP)
+      newState = RPIO.input(23)
+      if newState != _isDoorOpen:
+        _isDoorOpen = newState
+        if _isDoorOpen is True:
+          logger.info("Door opened.\r")
+          if _isAway is True:
+            _isAway = False
+            KeyboardListener.executeMacro("H", None)
+            logger.info("[AWAY] Deactivated: Door\r")
+        else:
+          logger.info("Door closed.\r")
+      time.sleep(1)
+      errorTimer = 60
+    except Exception, e:
+      logging.error("Error reading door state: " + str(e) + "\r")
+      time.sleep(errorTimer)
+      if errorTimer < 600:
+        errorTimer += 60
 
 
 def _startHueMonitor():

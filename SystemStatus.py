@@ -173,7 +173,7 @@ def _doorWatcher(logger):
           logger.info("Door opened.\r")
           if _isAway is True:
             _isAway = False
-            KeyboardListener.executeMacro("H", None)
+            macros.execute("H", None)
             logger.info("[AWAY] Deactivated: Door\r")
         else:
           logger.info("Door closed.\r")

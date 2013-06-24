@@ -36,6 +36,8 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
             if self.path == "/execute":
                 key = postvars.get("key")[0]
                 modifier = postvars.get("modifier")[0]
+                if modifier == "":
+                    modifier = None
                 macros.execute(key, modifier)
                 response = '{"updated": true}'
                 self.send_response(200)

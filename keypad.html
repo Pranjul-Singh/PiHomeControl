@@ -21,10 +21,6 @@
     .btnVDouble {
       height: 164px;
     }
-
-
-
-
   </style>
 </head>
 <body ng-controller="KeyPadController">
@@ -32,36 +28,50 @@
   <div class="container">
     <table>
       <tr>
-        <td><button class="btn btn-block" ng-click="setModifier('Off')">Off</button></td>
-        <td><button class="btn btn-block" ng-click="setModifier('VirginBlue')">Virgin Blue</button></td>
-        <td><button class="btn btn-block" ng-click="setModifier('NightRed')">Night Red</button></td>
-        <td><button class="btn btn-block" ng-click="setModifier('DimWhite')">Dim White</button></td>
+        <td>
+          <button class="btn btn-block btn-danger" ng-click="setModifier('Off')" ng-class="{active: modifier=='Off'}">Off</button>
+        </td>
+        <td>
+          <button class="btn btn-block btn-info" ng-click="setModifier('VirginBlue')" ng-class="{active: modifier=='VirginBlue'}">Virgin Blue</button>
+        </td>
+        <td>
+          <button class="btn btn-block btn-info" ng-click="setModifier('NightRed')" ng-class="{active: modifier=='NightRed'}">Night Red</button>
+        </td>
+        <td>
+          <button class="btn btn-block btn-info" ng-click="setModifier('DimWhite')" ng-class="{active: modifier=='DimWhite'}">Dim White</button>
+        </td>
       </tr>
       <tr>
         <td><button class="btn btn-block" ng-click="pushButton('7')">Bed Time</button></td>
         <td><button class="btn btn-block" ng-click="pushButton('8')">Living Room A/C</button></td>
         <td><button class="btn btn-block" ng-click="pushButton('9')">Bedroom A/C</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('-')">-</button></td>
+        <td>
+          <button class="btn btn-block btn-info" ng-click="setModifier('DOWN')" ng-class="{active: modifier=='DOWN'}">-</button>
+        </td>
       </tr>
       <tr>
         <td><button class="btn btn-block" ng-click="pushButton('4')">Kitchen</button></td>
         <td><button class="btn btn-block" ng-click="pushButton('5')">Bedroom</button></td>
         <td><button class="btn btn-block" ng-click="pushButton('6')">Bedside Lamp</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('+')">+</button></td>
+        <td>
+          <button class="btn btn-block btn-info" ng-click="setModifier('UP')" ng-class="{active: modifier=='UP'}">+</button>
+        </td>
       </tr>
       <tr>
         <td><button class="btn btn-block" ng-click="pushButton('1')">Front Hall</button></td>
         <td><button class="btn btn-block" ng-click="pushButton('2')">Living Room</button></td>
         <td><button class="btn btn-block" ng-click="pushButton('3')">Ikea</button></td>
         <td rowspan=2>
-          <button class="btn btn-block btnVDouble" ng-click="pushButton('H')">Home</button>
+          <button class="btn btn-block btnVDouble btn-success" ng-click="pushButton('H')">Home</button>
         </td>
       </tr>
       <tr>
         <td colspan=2>
-          <button class="btn btn-block" ng-click="pushButton('0')">Away</button>
+          <button class="btn btn-block btn-warning" ng-click="pushButton('0')">Away</button>
         </td>
-        <td><button class="btn btn-block" ng-click="setModifier('CoolWhite')">Cool White</button></td>
+        <td>
+          <button class="btn btn-block btn-info" ng-click="setModifier('Energize')" ng-class="{active: modifier=='Energize'}">Cool White</button>
+        </td>
       </tr>
     </table>
   </div>
@@ -70,18 +80,52 @@
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
   <script type="text/javascript">
-    function KeyPadController($scope, $http) {
+    function KeyPadController($scope, $timeout) {
 
       $scope.modifier = null;
+      $scope.modifierOffAt = 0;
+
+      $scope.petekey = function(a, b, c) {
+        console.log(a, b, c);
+      }
+
+      $scope.checkTimer = function() {
+        if ($scope.modifierOffAt < Date.now()) {
+          $scope.modifier = null;
+          $scope.modifierOffAt = 0;
+        }
+        $timeout($scope.checkTimer, 1000);
+      }
 
       $scope.setModifier = function(modifier) {
-        $scope.modifier = modifier;
-        console.log("modifier", modifier);
+        if (modifier == $scope.modifier) {
+          $scope.modifier = null;
+          $scope.modifierOffAt = 0;
+        } else {
+          $scope.modifier = modifier;
+          $scope.modifierOffAt = Date.now() + (10 * 1000);
+        }
       };
 
       $scope.pushButton = function(button) {
-        console.log("pushButton", button, $scope.modifier);
+        var data = {};
+        data['key'] = button;
+        if ($scope.modifier == null) {
+          data['modifier'] = ""
+        } else {
+          data['modifier'] = $scope.modifier;
+        }
+        $.ajax({
+          url: "http://192.168.1.201:8090/execute",
+          method: "POST",
+          data: data
+        }).done(function() {
+          console.log("Done")
+        });
+        $scope.modifier = null;
       };
+
+      $scope.checkTimer();
     }
   </script>
 </body>

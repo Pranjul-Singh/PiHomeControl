@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+  <title>Home</title>
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style type="text/css">
+    table {
+      width: 100%;
+    }
+
+    td {
+      width: 25%;
+      padding: 2px;
+    }
+
+    .btn {
+      height: 80px;
+    }
+
+    .btnVDouble {
+      height: 164px;
+    }
+
+
+
+
+  </style>
+</head>
+<body ng-controller="KeyPadController">
+
+  <div class="container">
+    <table>
+      <tr>
+        <td><button class="btn btn-block" ng-click="setModifier('Off')">Off</button></td>
+        <td><button class="btn btn-block" ng-click="setModifier('VirginBlue')">Virgin Blue</button></td>
+        <td><button class="btn btn-block" ng-click="setModifier('NightRed')">Night Red</button></td>
+        <td><button class="btn btn-block" ng-click="setModifier('DimWhite')">Dim White</button></td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-block" ng-click="pushButton('7')">Bed Time</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('8')">Living Room A/C</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('9')">Bedroom A/C</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('-')">-</button></td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-block" ng-click="pushButton('4')">Kitchen</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('5')">Bedroom</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('6')">Bedside Lamp</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('+')">+</button></td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-block" ng-click="pushButton('1')">Front Hall</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('2')">Living Room</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('3')">Ikea</button></td>
+        <td rowspan=2>
+          <button class="btn btn-block btnVDouble" ng-click="pushButton('H')">Home</button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan=2>
+          <button class="btn btn-block" ng-click="pushButton('0')">Away</button>
+        </td>
+        <td><button class="btn btn-block" ng-click="setModifier('CoolWhite')">Cool White</button></td>
+      </tr>
+    </table>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+  <script type="text/javascript">
+    function KeyPadController($scope, $http) {
+
+      $scope.modifier = null;
+
+      $scope.setModifier = function(modifier) {
+        $scope.modifier = modifier;
+        console.log("modifier", modifier);
+      };
+
+      $scope.pushButton = function(button) {
+        console.log("pushButton", button, $scope.modifier);
+      };
+    }
+  </script>
+</body>
+</html>

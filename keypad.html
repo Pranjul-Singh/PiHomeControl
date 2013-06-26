@@ -101,9 +101,24 @@
         $.ajax({
           url: "/status"
         }).done(function (status) {
-          $scope.acLROn = status.airConditioners["AC-LR"]["mode"] == true;
-          $scope.acBROn = status.airConditioners["AC-BED"]["mode"] == true;
-          $scope.lightFH = false;
+          $scope.acLROn = status.airConditioners["AC-LR"]["mode"] == "ON";
+          $scope.acBROn = status.airConditioners["AC-BED"]["mode"] == "ON";
+          
+          $scope.lightLR = status['hueState']['lights'][1]['state']['on'] &&
+                           status['hueState']['lights'][2]['state']['on'];
+
+          $scope.lightBS = status['hueState']['lights'][3]['state']['on'];
+          
+          $scope.lightKI = status['hueState']['lights'][4]['state']['on'];
+
+          $scope.lightBR = status['hueState']['lights'][5]['state']['on'] &&
+                           status['hueState']['lights'][6]['state']['on'];
+
+          $scope.lightFH = status['hueState']['lights'][7]['state']['on'];
+
+          $scope.lightIK = status['hueState']['lights'][8]['state']['on'] &&
+                           status['hueState']['lights'][9]['state']['on'] &&
+                           status['hueState']['lights'][10]['state']['on'];
         });
       }
 
@@ -138,13 +153,13 @@
           method: "POST",
           data: data
         }).done(function() {
-          $scope.updatePiStatus();
+          //$scope.updatePiStatus();
         });
         $scope.modifier = null;
       };
 
       $scope.checkTimer();
-      setInterval($scope.updatePiStatus, 10000);
+      setInterval($scope.updatePiStatus, 5000);
     }
   </script>
 </body>

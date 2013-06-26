@@ -8,12 +8,13 @@ import macros
 import logging
 import httplib
 import indoorTemp
-import KeyboardListener
+import HarmonyHub
 from subprocess import Popen, PIPE
 from datetime import datetime, timedelta
 
 itachIP = None
 hueBridgeIP = None
+harmonyIP = None
 hueAppID = "9075e416a7d67c2f6c7d9386dff2e591"
 
 _armAwayAt = datetime.min
@@ -28,6 +29,7 @@ _gVoiceLightOn = None
 _insideTemp = None
 _outsideTemp = None
 _hueState = None
+_harmonyState = None
 
 def start():
   global _monitorLoop, _startTime
@@ -38,6 +40,7 @@ def start():
   _initAC()
   _startDoorWatcher()
   _startHueMonitor()
+  _startHarmonyMonitor()
   _startInsideTempMonitor()
   _startOutsideTempMonitor()
   _startGVoiceMonitor()
@@ -53,7 +56,8 @@ def stop():
 
 def get():
   global _startTime, _monitorLoop, _isAway, _isDoorOpen, _acState, _hueState
-  global _insideTemp, _outsideTemp, _gVoiceMessages, hueBridgeIP, itachIP
+  global _insideTemp, _outsideTemp, _gVoiceMessages, _harmonyState
+  global hueBridgeIP, itachIP, harmonyIP
   result = {}
   result["systemTime"] = (float(datetime.now().strftime('%s.%f')) * 1000)
   result["startTime"] = _startTime
@@ -62,10 +66,12 @@ def get():
   result["doorOpen"] = _isDoorOpen
   result["airConditioners"] = _acState
   result["hueState"] = _hueState
+  result["harmonyState"] = _harmonyState
   result["insideTemperature"] = _insideTemp
   result["outsideTemperature"] = _outsideTemp
   result["hueBridgeIP"] = hueBridgeIP
   result["itachIP"] = itachIP
+  result["harmonyIP"] = harmonyIP
   result["gVoiceMessages"] = _gVoiceMessages
   return result
 
@@ -192,15 +198,43 @@ def _startHueMonitor():
 
 def _hueMonitor(logger):
   global _monitorLoop, _hueState, hueBridgeIP, hueAppID
-  
+
+  errorTimer = 60
   logger.info("Starting Hue bridge monitor.\r")
   bridge = phue.Bridge(ip=hueBridgeIP, username=hueAppID)
   while _monitorLoop:
     try:
       _hueState = bridge.get_api()
+      time.sleep(5)
+      errorTimer = 60
     except Exception, e:
+      _hueState = None
       logger.error("Error reading Hue Hub state: " + str(e) + "\r")
-    time.sleep(5)
+      time.sleep(errorTimer)
+      if errorTimer <= 600:
+        errorTimer += 60
+
+
+def _startHarmonyMonitor():
+  thread.start_new_thread( _harmonyMonitor, (logging.getLogger(''),))
+
+
+def _harmonyMonitor(logger):
+  global _monitorLoop, _harmonyState
+
+  errorTimer = 60
+  logger.info("Starting Harmony monitor\r")
+  while _monitorLoop:
+    try:
+      _harmonyState = HarmonyHub.getCurrentActivity()
+      time.sleep(60)
+      errorTimer = 60
+    except Exception, e:
+      _harmonyState = None
+      logger.error("Error reading Harmony state: " + str(e) + "\r")
+      time.sleep(errorTimer)
+      if errorTimer <= 600:
+        errorTimer += 60
 
 
 def _startInsideTempMonitor():
@@ -208,7 +242,7 @@ def _startInsideTempMonitor():
   if ready is True:
     thread.start_new_thread( _insideTempMonitor, (logging.getLogger(''),))
   else:
-    pass
+    logger.error("Unable to start inside temperature monitor, init failed.\r")
 
 
 def _insideTempMonitor(logger):

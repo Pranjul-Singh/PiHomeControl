@@ -3,6 +3,7 @@
 import AirCon
 import logging
 import HueBridge
+import HarmonyHub
 import SystemStatus
 from datetime import datetime
 
@@ -41,6 +42,7 @@ def execute(key, modifier):
         HueBridge.sendCommandToGroup(0, commands.get("Off"))
         AirCon.turnOff("AC-LR")
         AirCon.turnOff("AC-BED")
+        HarmonyHub.startActivity("off")
         SystemStatus.setAway(True)
     else:
         SystemStatus.setAway(False)
@@ -55,6 +57,21 @@ def execute(key, modifier):
                 AirCon.controller("AC-LR", modifier)
             elif key == "9":
                 AirCon.controller("AC-BED", modifier)
+        elif key == "7":
+            lightSettings = groups.get(key)
+            lightCommand = lightSettings.get("command")
+            lightOn = lightSettings.get("lightsOn")
+            lightOff = lightSettings.get("lightsOff")
+            if lightOff:
+                HueBridge.turnLightsOff(lightOff)
+            if lightOn > 0:
+                HueBridge.sendCommand(lightOn, lightCommand)
+            try:
+                if SystemStatus.get()["airConditioners"]["AC-LR"]["mode"] == "ON":
+                    AirCon.turnOn("AC-BED")
+                    AirCon.turnOff("AC-LR")
+            except Exception, e:
+                logging.info("Error retrieving living room a/c status: " + str(e) + "\r")
         else:
             lightSettings = groups.get(key)
             if lightSettings is not None:

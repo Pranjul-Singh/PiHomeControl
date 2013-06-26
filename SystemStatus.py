@@ -242,7 +242,7 @@ def _startInsideTempMonitor():
   if ready is True:
     thread.start_new_thread( _insideTempMonitor, (logging.getLogger(''),))
   else:
-    logger.error("Unable to start inside temperature monitor, init failed.\r")
+    logging.error("Unable to start inside temperature monitor, init failed.\r")
 
 
 def _insideTempMonitor(logger):

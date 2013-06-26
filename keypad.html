@@ -47,24 +47,24 @@
       </tr>
       <tr>
         <td><button class="btn btn-block" ng-click="pushButton('7')">Bed Time</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('8')">Living Room A/C</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('9')">Bedroom A/C</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('8')" ng-class="{active: acLROn}">Living Room A/C</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('9')" ng-class="{active: acBROn}">Bedroom A/C</button></td>
         <td>
           <button class="btn btn-block btn-info" ng-click="setModifier('DOWN')" ng-class="{active: modifier=='DOWN'}">-</button>
         </td>
       </tr>
       <tr>
-        <td><button class="btn btn-block" ng-click="pushButton('4')">Kitchen</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('5')">Bedroom</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('6')">Bedside Lamp</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('4')" ng-class="{active: lightKI}">Kitchen</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('5')" ng-class="{active: lightBR}">Bedroom</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('6')" ng-class="{active: lightBS}">Bedside Lamp</button></td>
         <td>
           <button class="btn btn-block btn-info" ng-click="setModifier('UP')" ng-class="{active: modifier=='UP'}">+</button>
         </td>
       </tr>
       <tr>
-        <td><button class="btn btn-block" ng-click="pushButton('1')">Front Hall</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('2')">Living Room</button></td>
-        <td><button class="btn btn-block" ng-click="pushButton('3')">Ikea</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('1')" ng-class="{active: lightFH}">Front Hall</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('2')" ng-class="{active: lightLR}">Living Room</button></td>
+        <td><button class="btn btn-block" ng-click="pushButton('3')" ng-class="{active: lightIK}">Ikea</button></td>
         <td rowspan=2>
           <button class="btn btn-block btnVDouble btn-success" ng-click="pushButton('H')">Home</button>
         </td>
@@ -88,9 +88,23 @@
 
       $scope.modifier = null;
       $scope.modifierOffAt = 0;
+      $scope.acLROn = false;
+      $scope.acBROn = false;
+      $scope.lightFH = false;
+      $scope.lightLR = false;
+      $scope.lightIK = false;
+      $scope.lightKI = false;
+      $scope.lightBR = false;
+      $scope.lightBS = false;
 
-      $scope.petekey = function(a, b, c) {
-        console.log(a, b, c);
+      $scope.updatePiStatus = function() {
+        $.ajax({
+          url: "/status"
+        }).done(function (status) {
+          $scope.acLROn = status.airConditioners["AC-LR"]["mode"] == true;
+          $scope.acBROn = status.airConditioners["AC-BED"]["mode"] == true;
+          $scope.lightFH = false;
+        });
       }
 
       $scope.checkTimer = function() {
@@ -120,16 +134,17 @@
           data['modifier'] = $scope.modifier;
         }
         $.ajax({
-          url: "http://192.168.1.201:8090/execute",
+          url: "/execute",
           method: "POST",
           data: data
         }).done(function() {
-          console.log("Done")
+          $scope.updatePiStatus();
         });
         $scope.modifier = null;
       };
 
       $scope.checkTimer();
+      setInterval($scope.updatePiStatus, 10000);
     }
   </script>
 </body>

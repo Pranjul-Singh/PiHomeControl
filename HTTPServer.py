@@ -41,7 +41,7 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
                 macros.execute(key, modifier)
                 response = '{"updated": true}'
                 self.send_response(200)
-                self.send_header('Content-type', "application/json")
+                self.send_header('Content-type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(response)
@@ -54,23 +54,25 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
     #handle GET command
     def do_GET(self):
         # rootdir = './'  # file location
-        response_code = 200
+        response_code = 404
         response = ""
         mime_type = ""
         try:
-            if self.path == "/":
-                response = "Nothing to see here, move along."
-                mime_type = "text/html"
+            if self.path == "/kp":
+                f = open("keypad.html")
+                response = f.read()
+                f.close()
+                response_code = 200
+                mime_type = 'text/html'
+
             elif self.path == "/status":
                 response = json.dumps(SystemStatus.get())
-                mime_type = "application/json"
+                mime_type = 'application/json'
+                response_code = 200
+
             else:
                 response = "Nothing to see here, move along."
-                mime_type = "text/html"
-                #open requested file
-                # f = open(rootdir + self.path)
-                # response = f.read()
-                # f.close()
+                mime_type = "text/plain"
 
             #send file content to client
             self.send_response(response_code)

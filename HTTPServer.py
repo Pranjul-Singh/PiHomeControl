@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import cgi
+import ssl
 import json
 import macros
 import thread
@@ -14,13 +15,6 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
     def log_message( self, format, *args ):
       pass
       # logging.info("HTTPD: " + str(args) + "\r")
-
-    def get_mime_type(extension):
-        # text/css
-        # text/html
-        # application/javascript
-        # image/jpeg,gif,png
-        return "text/plain"
 
     # handle POST command
     def do_POST(self):
@@ -53,7 +47,6 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
 
     #handle GET command
     def do_GET(self):
-        # rootdir = './'  # file location
         response_code = 404
         response = ""
         mime_type = ""
@@ -71,7 +64,7 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
                 response_code = 200
 
             else:
-                response = "Nothing to see here, move along."
+                response = ""
                 mime_type = "text/plain"
 
             #send file content to client
@@ -93,10 +86,12 @@ def start():
 
 def _run(logger):
     try:
-        logger.info("Starting HTTP Server...\r")
-        server_address = ('', 8090)
+        logger.info("Starting HTTPS Server...\r")
+        server_address = ('', 4443)
+        cert_file = "./httpsd.pem"
         httpd = HTTPServer(server_address, HuePiRequestHandler)
+        httpd.socket = ssl.wrap_socket(httpd.socket, certfile=cert_file, server_side=True)
         httpd.serve_forever()
-        logger.info("HTTP Server is running...\r")
+        logger.info("HTTPS Server is running...\r")
     except Exception, e:
-        logging.error("Unable to start the HTTP Server: " + str(e) + "\r")
+        logging.error("Unable to start the HTTPS Server: " + str(e) + "\r")

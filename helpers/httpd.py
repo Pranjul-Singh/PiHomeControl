@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import os
-import logging
+import ssl
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
+## Certificate Generation:
+# openssl req -new -x509 -keyout test.pem -out test.pem -days 365 -nodes
 
 #Create custom HTTPRequestHandler class
 class HuePiRequestHandler(BaseHTTPRequestHandler):
@@ -13,44 +14,20 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
 
     #handle GET command
     def do_GET(self):
-        rootdir = './'  # file location
         try:
-            if self.path == "/":
-                pass
-            elif self.path == "/status":
-                pass
-            else:
-                #open requested file
-                f = open(rootdir + self.path)
-
-                #send code 200 response
-                self.send_response(200)
-
-                #send header first
-                if self.path.endswith(".html"):
-                    self.send_header('Content-type', 'text/plain')
-                elif self.path.endswith(".js"):
-                    pass
-                elif self.path.endswith(".css"):
-                    pass
-                else:
-                    pass
-                self.end_headers()
-
-                #send file content to client
-                self.wfile.write(f.read())
-                f.close()
-                return
-
-        except IOError:
-            self.send_error(404, 'File not found')
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write("Oh, Hello, world!")
         except:
             self.send_error(500, 'Server error')
 
-def run():
-    logging.info("Starting HTTP Server...")
-    #ip and port of servr
-    server_address = ('', 8090)
-    httpd = HTTPServer(server_address, HuePiRequestHandler)
-    httpd.serve_forever()
-    logging.info("HTTP Server is running...")
+
+print("Starting HTTP Server...")
+#ip and port of servr
+server_address = ('', 4443)
+cert = './test.pem'
+httpd = HTTPServer(server_address, HuePiRequestHandler)
+httpd.socket = ssl.wrap_socket(httpd.socket, certfile=cert, server_side=True)
+httpd.serve_forever()
+print("HTTP Server is running...")

@@ -2,6 +2,7 @@
 
 import cgi
 import ssl
+import Keys
 import json
 import macros
 import thread
@@ -27,21 +28,45 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
         else:
             postvars = {}
         try:
-            if self.path == "/execute":
+            response_code = 404
+            response = ""
+            mime_type = ""
+            auth = postvars.get("auth")
+            if auth is None or auth[0] != Keys.HTTP_AUTH_KEY:
+                f = open("./html/login.html")
+                response = f.read()
+                response = response.replace("Hello.", "No.")
+                f.close()
+                response_code = 401
+                mime_type = 'text/html'
+            if self.path == "/kp":
+                f = open("./html/keypad.html")
+                response = f.read()
+                response = response.replace("*AUTHKEY*", Keys.HTTP_AUTH_KEY)
+                f.close()
+                response_code = 200
+                mime_type = 'text/html'
+            elif self.path == "/status":
+                response = json.dumps(SystemStatus.get())
+                mime_type = 'application/json'
+                response_code = 200
+            elif self.path == "/execute":
                 key = postvars.get("key")[0]
                 modifier = postvars.get("modifier")[0]
                 if modifier == "":
                     modifier = None
                 macros.execute(key, modifier)
                 response = '{"updated": true}'
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(response)
-                return
+                response_code = 200
+                mime_type = 'application/json'
             else:
-                self.send_error(404, 'File not found')
+                mime_type = 'text/plain'
+
+            self.send_response(response_code)
+            self.send_header('Content-type', mime_type)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(response)
         except Exception, e:
             self.send_error(500, str(e))
 
@@ -51,18 +76,12 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
         response = ""
         mime_type = ""
         try:
-            if self.path == "/kp":
-                f = open("keypad.html")
+            if self.path == "/login":
+                f = open("./html/login.html")
                 response = f.read()
                 f.close()
                 response_code = 200
                 mime_type = 'text/html'
-
-            elif self.path == "/status":
-                response = json.dumps(SystemStatus.get())
-                mime_type = 'application/json'
-                response_code = 200
-
             else:
                 response = ""
                 mime_type = "text/plain"
@@ -70,12 +89,11 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
             #send file content to client
             self.send_response(response_code)
             self.send_header('Content-type', mime_type)
-            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(response)
             return
-        except IOError:
-            self.send_error(404, 'File not found')
+        except IOError, e:
+            self.send_error(404, str(e))
         except Exception, e:
             self.send_error(500, str(e))
 

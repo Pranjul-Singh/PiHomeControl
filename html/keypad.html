@@ -98,8 +98,12 @@
       $scope.lightBS = false;
 
       $scope.updatePiStatus = function() {
+        var data = {};
+        data['authKey'] = "*AUTHKEY*";
         $.ajax({
-          url: "/status"
+          url: "/status",
+          method: "POST",
+          data: data
         }).done(function (status) {
           $scope.acLROn = status.airConditioners["AC-LR"]["mode"] == "ON";
           $scope.acBROn = status.airConditioners["AC-BED"]["mode"] == "ON";
@@ -143,6 +147,7 @@
       $scope.pushButton = function(button) {
         var data = {};
         data['key'] = button;
+        data['authKey'] = "*AUTHKEY*";
         if ($scope.modifier == null) {
           data['modifier'] = ""
         } else {

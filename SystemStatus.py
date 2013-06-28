@@ -3,6 +3,7 @@
 import phue
 import time
 import json
+import Keys
 import thread
 import macros
 import logging
@@ -276,7 +277,7 @@ def _outsideTempMonitor(logger):
     try:
       conn = httplib.HTTPConnection("api.wunderground.com")
       url = "/api/[KEY]/conditions/q/40.69748,-73.98093.json"
-      conn.request("GET", url.replace("[KEY]", "a686072a8a6d09d3"))
+      conn.request("GET", url.replace("[KEY]", Keys.WEATHERBUG))
       r1 = conn.getresponse()
       w = json.loads(r1.read())
       conn.close()

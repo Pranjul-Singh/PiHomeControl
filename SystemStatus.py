@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 
 itachIP = None
 hueBridgeIP = None
-harmonyIP = None
+harmonyHub = None
 hueAppID = "9075e416a7d67c2f6c7d9386dff2e591"
 
 _armAwayAt = datetime.min
@@ -41,7 +41,7 @@ def start():
   _initAC()
   _startDoorWatcher()
   _startHueMonitor()
-  _startHarmonyMonitor()
+  # _startHarmonyMonitor()
   _startInsideTempMonitor()
   _startOutsideTempMonitor()
   _startGVoiceMonitor()
@@ -58,7 +58,7 @@ def stop():
 def get():
   global _startTime, _monitorLoop, _isAway, _isDoorOpen, _acState, _hueState
   global _insideTemp, _outsideTemp, _gVoiceMessages, _harmonyState
-  global hueBridgeIP, itachIP, harmonyIP
+  global hueBridgeIP, itachIP, harmonyHub
   result = {}
   result["systemTime"] = (float(datetime.now().strftime('%s.%f')) * 1000)
   result["startTime"] = _startTime
@@ -72,7 +72,7 @@ def get():
   result["outsideTemperature"] = _outsideTemp
   result["hueBridgeIP"] = hueBridgeIP
   result["itachIP"] = itachIP
-  result["harmonyIP"] = harmonyIP
+  result["harmonyHub"] = harmonyHub
   result["gVoiceMessages"] = _gVoiceMessages
   return result
 

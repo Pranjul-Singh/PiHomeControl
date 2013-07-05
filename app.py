@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import logging
+import HarmonyHub
 import HTTPServer
 import UDPListener
 import SystemStatus
@@ -31,6 +32,10 @@ def main():
             ["NOTIFY * HTTP/1.1", ":80/description.xml"])
         #SystemStatus.hueBridgeIP = "192.168.1.17"
         logging.info("Hue Bridge IP: [" + str(SystemStatus.hueBridgeIP) + "]")
+
+        logging.info("Searching local network for HarmonyHub...")
+        SystemStatus.harmonyHub = HarmonyHub.findHub()
+        logging.info("Harmony Hub: [" + str(SystemStatus.harmonyHub["ip"]) + "]")
 
         SystemStatus.start()
 

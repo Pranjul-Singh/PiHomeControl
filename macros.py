@@ -42,7 +42,7 @@ def execute(key, modifier):
         HueBridge.sendCommandToGroup(0, commands.get("Off"))
         AirCon.turnOff("AC-LR")
         AirCon.turnOff("AC-BED")
-        HarmonyHub.startActivity("off")
+        HarmonyHub.turnOff()
         SystemStatus.setAway(True)
     else:
         SystemStatus.setAway(False)
@@ -62,6 +62,7 @@ def execute(key, modifier):
             lightCommand = lightSettings.get("command")
             lightOn = lightSettings.get("lightsOn")
             lightOff = lightSettings.get("lightsOff")
+            HarmonyHub.turnOff()
             if lightOff:
                 HueBridge.turnLightsOff(lightOff)
             if lightOn > 0:

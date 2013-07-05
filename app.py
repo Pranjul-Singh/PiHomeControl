@@ -12,7 +12,7 @@ def main():
     try:
         logLevel = logging.INFO
         logFormat = '%(asctime)s | %(levelname)-7s | %(message)s'
-        logFile = './huepi.log'
+        logFile = '../public_html/huepi.log'
         logging.basicConfig(format=logFormat, filename=logFile, level=logLevel)
         console = logging.StreamHandler()
         console.setLevel(logLevel)
@@ -35,11 +35,14 @@ def main():
 
         logging.info("Searching local network for HarmonyHub...")
         SystemStatus.harmonyHub = HarmonyHub.findHub()
-        logging.info("Harmony Hub: [" + str(SystemStatus.harmonyHub["ip"]) + "]")
+        try:
+            logging.info("Harmony Hub: [" + str(SystemStatus.harmonyHub["ip"]) + "]")
+        except:
+            logging.info("Harmony Hub: Not Found")
 
         SystemStatus.start()
 
-        HTTPServer.start()
+        # HTTPServer.start()
 
         logging.info("Ready.")
 

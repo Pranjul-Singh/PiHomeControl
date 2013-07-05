@@ -10,7 +10,7 @@ import logging
 import SystemStatus
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-##openssl req -new -x509 -keyout test.pem -out test.pem -days 365 -nodes
+##openssl req -new -x509 -keyout httpsd.pem -out httpsd.pem -days 365 -nodes
 
 #Create custom HTTPRequestHandler class
 class HuePiRequestHandler(BaseHTTPRequestHandler):
@@ -83,6 +83,12 @@ class HuePiRequestHandler(BaseHTTPRequestHandler):
                 f.close()
                 response_code = 200
                 mime_type = 'text/html'
+            if self.path == "/logs":
+                f = open("./huepi.log")
+                response = f.read()
+                f.close()
+                response_code = 200
+                mime_type = 'text/plain'
             else:
                 response = ""
                 mime_type = "text/plain"
@@ -105,12 +111,12 @@ def start():
 
 def _run(logger):
     try:
-        logger.info("Starting HTTPS Server...\r")
+        logger.info("Starting HTTP Server...\r")
         server_address = ('', 4443)
         cert_file = "./httpsd.pem"
         httpd = HTTPServer(server_address, HuePiRequestHandler)
-        httpd.socket = ssl.wrap_socket(httpd.socket, certfile=cert_file, server_side=True)
+        #httpd.socket = ssl.wrap_socket(httpd.socket, certfile=cert_file, server_side=True)
         httpd.serve_forever()
-        logger.info("HTTPS Server is running...\r")
+        logger.info("HTTP Server is running...\r")
     except Exception, e:
-        logging.error("Unable to start the HTTPS Server: " + str(e) + "\r")
+        logging.error("Unable to start the HTTP Server: " + str(e) + "\r")

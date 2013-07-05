@@ -45,6 +45,7 @@ def start():
   _startInsideTempMonitor()
   _startOutsideTempMonitor()
   _startGVoiceMonitor()
+  _startStatusWriter()
   setLED(0, True)
 
 
@@ -78,7 +79,7 @@ def get():
 
 
 def saveToDisk(filename):
-  result = get()
+  result = json.dumps(get())
   with open(filename, "w") as text_file:
     text_file.write(result)
 
@@ -89,7 +90,7 @@ def setAway(away):
   if away is True and _isAway is False:
     logging.info("[AWAY] System arming.")
     _gVoiceLightOn = False
-    _armAwayAt = datetime.now() + timedelta(seconds=60)
+    _armAwayAt = datetime.now() + timedelta(seconds=300)
     thread.start_new_thread( _armAway, (logging.getLogger(''),))
   elif away is False and _isAway is True:
     _isAway = False
@@ -190,6 +191,24 @@ def _doorWatcher(logger):
       logging.error("Error reading door state: " + str(e) + "\r")
       time.sleep(errorTimer)
       if errorTimer < 600:
+        errorTimer += 60
+
+
+def _startStatusWriter():
+  thread.start_new_thread( _writeStatus, (logging.getLogger(''),))
+
+
+def _writeStatus(logger):
+  _errorTimer = 60
+  while _monitorLoop:
+    try:
+      saveToDisk('../public_html/status.json')
+      time.sleep(30)
+      errorTimer = 60
+    except:
+      logger.error("Error writing to status.json: " + str(e) + "\r")
+      time.sleep(errorTimer)
+      if errorTimer <= 600:
         errorTimer += 60
 
 

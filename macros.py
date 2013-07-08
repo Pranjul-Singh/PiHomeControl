@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import AirCon
+import Speech
 import logging
 import HueBridge
 import HarmonyHub
@@ -44,6 +45,7 @@ def execute(key, modifier):
         AirCon.turnOff("AC-BED")
         HarmonyHub.turnOff()
         SystemStatus.setAway(True)
+        Speech.away()
     else:
         SystemStatus.setAway(False)
         if key == "H":
@@ -52,6 +54,7 @@ def execute(key, modifier):
             AirCon.autoOn("AC-LR")
             if datetime.now().hour > 21:
                 AirCon.autoOn("AC-BED")
+            Speech.welcomeHome()
         elif key == "8" or key == "9":
             if key == "8":
                 AirCon.controller("AC-LR", modifier)
@@ -73,6 +76,7 @@ def execute(key, modifier):
                     AirCon.turnOff("AC-LR")
             except Exception, e:
                 logging.info("Error retrieving living room a/c status: " + str(e) + "\r")
+            Speech.goodNight()
         else:
             lightSettings = groups.get(key)
             if lightSettings is not None:

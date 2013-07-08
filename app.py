@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import Speech
 import logging
 import HarmonyHub
 import HTTPServer
@@ -45,6 +46,7 @@ def main():
         # HTTPServer.start()
 
         logging.info("Ready.")
+        Speech.ready()
 
         KeyboardListener.listen()
 

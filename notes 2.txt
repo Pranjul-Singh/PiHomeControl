@@ -1,0 +1,33 @@
+Ideas/Notes
+
+
+Change inputs to be InputHandlers
+ - Door
+ - GVoice
+ - KeyPad
+ - CloudManager 
+ - UDPListener
+
+
+config = Config.Config()
+controller = System.Controller(config)
+controller.addHandler(Door())
+controller.addHandler(KeyPad())
+controller.addHandler(GVoice())
+controller.addHandler(Cloud()) 
+controller.addHandler(UDPListener())
+controller.waitForShutdown()
+
+
+
+Input Hander
+ .constructor(controller)
+ .stop()
+
+Controller Expected Methods
+ .state
+ .config
+ .status()
+ .shutdown()
+ .executeCommandByName()
+ .executeCommandByKey()

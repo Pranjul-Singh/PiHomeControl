@@ -9,7 +9,7 @@ import CloudLog
 
 
 def main():
-    print "Homemade Pi"
+    appName = "PiHomeControl"
     try:
 
       if os.getlogin() == "pi":
@@ -17,8 +17,7 @@ def main():
       else:
         log_file = 'pi-automate.log'
       CloudLog.init(log_file)
-      CloudLog.log("App", "Start")
-      CloudLog.track("APP", "STARTED")
+      CloudLog.track(appName, "START")
 
       config = Config.Config()
       
@@ -29,8 +28,7 @@ def main():
     except Exception, e:
       CloudLog.error("App", "System Error", e)
     finally:
-      CloudLog.log("App", "Exited.")
-      CloudLog.track("APP", "EXITED")
+      CloudLog.track(appName, "EXITED")
 
 
 if __name__ == "__main__":

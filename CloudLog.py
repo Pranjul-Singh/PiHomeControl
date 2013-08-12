@@ -22,8 +22,8 @@ def log(component, message):
   _sendToLocalLog(component, message)
 
 def track(component, value):
+  _sendToLocalLog(component, value)
   _sendToCloud(component, value)
-  #_sendToLocalLog(component, value)
 
 def error(component, message, exception=None):
   logging.exception(component)

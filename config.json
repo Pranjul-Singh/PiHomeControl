@@ -27,7 +27,8 @@
       "enabled": true,
       "interval": 15
     },
-    "ac_default_temp": "73"
+    "ac_default_temp": "73",
+    "ready_sound": "sounds/ready.mp3"
   },
   "ac_commands": {
     "On": "1,37993,1,1,319,160,21,61,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,21,21,61,21,21,21,21,21,61,21,21,21,21,21,21,21,21,21,61,21,21,21,61,21,61,21,3799",
@@ -81,7 +82,7 @@
           "state": "Auto"
         }
       ],
-      "sound": "sounds/home-3.mp3"
+      "sound": "sounds/home.mp3"
     },
     {
       "name": "AWAY",
@@ -104,7 +105,7 @@
         }
       ],
       "harmony": "Off",
-      "sound": "sounds/away-1.mp3"
+      "sound": "sounds/away.mp3"
     },
     {
       "name": "MORNING",
@@ -180,7 +181,7 @@
         }
       ],
       "harmony": "Off",
-      "sound": "sounds/sleep-1.mp3"
+      "sound": "sounds/sleep.mp3"
     },
     {
       "name": "LR_AC",
@@ -200,7 +201,7 @@
           "command": "VirginBlue"
         }
       ],
-      "sound": "sounds/bell-1.mp3"
+      "sound": "sounds/bell.mp3"
     },
     {
       "name": "GVoiceError",

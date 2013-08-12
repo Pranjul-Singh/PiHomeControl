@@ -39,7 +39,7 @@ class Controller:
      config.settings["inside_temperature"])
     self._gvoice = GVoice.Monitor(config.settings["gvoice"], self.callback_gvoice)
     self._door = Door.Monitor(self.callback_door)
-    SoundSystem.play("sounds/ready-1.mp3")
+    SoundSystem.play(config.settings["ready_sound"])
 
   def status(self):
     status = self._status

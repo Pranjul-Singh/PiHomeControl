@@ -4,7 +4,6 @@ import time
 import json
 from subprocess import Popen, PIPE
 
-
 class Monitor:
   _component = "GVoice"
   _controller = None
@@ -37,21 +36,25 @@ class Monitor:
 
   def _runLoop(self, params):
     CloudLog.log(self._component, "Running.")
+    if self.unread is None:
+      self.unread = 0
     while self.running:
       try:
-        previous_count = self.unread
-        output = Popen(['lynx', '-source', 'https://www.google.com/voice/request/unread'], stdout=PIPE)
-        response = output.stdout.read()
-        response = json.loads(response)
-        self.unread = int(response["unreadCounts"]["all"])
         if self._controller.state == "HOME":
+          output = Popen(['lynx', '-source', 'https://www.google.com/voice/request/unread'], stdout=PIPE)
+          response = output.stdout.read()
+          response = json.loads(response)
+          previous_count = self.unread
+          self.unread = int(response["unreadCounts"]["all"])
           if self.unread > previous_count:
             cmd = self._settings["cmd_new"]
             self._controller.executeCommandByName(cmd)
           elif self.unread == 0 and previous_count > 0:
             cmd = self._settings["cmd_zero"]
             self._controller.executeCommandByName(cmd)
-        interval = self._settings["interval"]
+          interval = self._settings["interval"]
+        else:
+          interval = self._settings["interval"] * 2
       except Exception, e:
         cmd = self._settings["cmd_error"]
         self._controller.executeCommandByName(cmd)

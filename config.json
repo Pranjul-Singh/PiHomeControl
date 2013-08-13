@@ -24,7 +24,7 @@
     },
     "gvoice": {
       "enabled": true,
-      "interval": 15,
+      "interval": 10,
       "cmd_new": "GVoiceNew",
       "cmd_zero": "GVoiceZero",
       "cmd_error": "GVoiceError"

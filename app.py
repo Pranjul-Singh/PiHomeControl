@@ -3,10 +3,11 @@
 import os
 import Cloud
 import Config
-import Keypad
 import System
 import CloudLog
-
+import Door
+import GVoice
+import Keypad
 
 def main():
     appName = "PiHomeControl"
@@ -22,7 +23,9 @@ def main():
       config = Config.Config()
       
       controller = System.Controller(config)
-      cloud = Cloud.Manager(controller, config)
+      controller.addHandler(Cloud.Monitor)
+      controller.addHandler(Door.Monitor)
+      controller.addHandler(GVoice.Monitor)
       Keypad.listen(controller)
 
     except Exception, e:

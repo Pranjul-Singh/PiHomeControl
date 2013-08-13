@@ -1,47 +1,67 @@
-import json
-import Keys
-import time
-import thread
-import httplib
 import CloudLog
+import httplib
+import thread
+import time
+import Keys
+import json
 
-class Manager:
-  _component = "Cloud.Manager"
+class Monitor:
+  _component = "CloudHandler"
   _controller = None
-  _config = None
-  _interval = None
-  _run = False
+  _settings = None
+  _thread = None
+  running = False
 
-  def __init__(self, controller, config):
-    CloudLog.log(self._component, "Initializing.")
-    try:
+  def __init__(self, controller):
+    self._settings = controller.config.settings["cloud_sync"]
+    if self._settings["push"] or self._settings["pull"]:
+      CloudLog.log(self._component, "Initializing.")
       self._controller = controller
-      self._config = config
-      self._run = True
-      self._interval = self._config.settings["cloud_sync"]["interval"]
-      if self._config.settings["cloud_sync"]["push"] is True:
-        thread.start_new_thread(self._pushLoop, (None,))
-      if self._config.settings["cloud_sync"]["pull"] is True:
-        thread.start_new_thread(self._pullLoop, (None,))
-      CloudLog.log(self._component, "Ready.")
-    except Exception, e:
-      CloudLog.error(self._component, "Error initializing Cloud Manager.", e)
-    pass
-
-  def __del__(self):
-    CloudLog.log(self._component, "Destructor")
-    self._run = False
+      self._start()
 
 
-  def _pullLoop(self, params):
-    while self._run is True:
+  def stop(self):
+    CloudLog.log(self._component, "Stopping.")
+    self.running = False
+
+
+  def _start(self):
+    if self.running is False:
+      self.running = True
       try:
-        self.pull()
+        self._thread = thread.start_new_thread(self._runLoop, (None,))
       except Exception, e:
-        CloudLog.error(self._component, "Error when pulling", e)
-      time.sleep(self._interval)
+        CloudLog.error(self._component, "Unable to start run loop", e)
 
-  def pull(self):
+
+  def _runLoop(self, params):
+    CloudLog.log(self._component, "Running.")
+    while self.running:
+      try:
+        if self._settings["push"]:
+          self._push()
+        if self._settings["pull"]:
+          self._pull()
+        interval = self._settings["interval"]
+      except Exception, e:
+        CloudLog.error(self._component, "Error in run loop", e)
+        if interval < self._interval * 10:
+          interval += self._interval
+      time.sleep(interval)
+    CloudLog.log(self._component, "Stopped.")
+
+
+  def _push(self):
+    try:
+      status = self._controller.status()
+      status["app_engine_key"] = Keys.APPENGINE_USER
+      content = json.dumps(status)
+      self._query("POST", "/set/status", content)
+    except Exception, e:
+      CloudLog.error(self._component, "Error pushing system status.", e)
+
+
+  def _pull(self):
     try:
       commands = []
       result = self._query("GET", "/get/cmds?clear=true", "")
@@ -57,23 +77,6 @@ class Manager:
       except Exception, e:
         CloudLog.error(self._component, "Error executing command", e)
 
-
-  def _pushLoop(self, params):
-    while self._run is True:
-      try:
-        self.push()
-      except Exception, e:
-        CloudLog.error(self._component, "Error when pushing data", e)
-      time.sleep(self._interval)
-
-  def push(self):
-    try:
-      status = self._controller.status()
-      status["app_engine_key"] = Keys.APPENGINE_USER
-      content = json.dumps(status)
-      self._query("POST", "/set/status", content)
-    except Exception, e:
-      CloudLog.error(self._component, "Error pushing system status.", e)
 
   def _query(self, method, url, content):
     try:

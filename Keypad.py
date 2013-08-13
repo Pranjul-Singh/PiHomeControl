@@ -25,11 +25,11 @@ def listen(controller):
       modifier = None
       modTimer = datetime.min
     if charInput == "q" or charInput == "Q":
+      CloudLog.log(component, "User Interupt (Q)")
       controller.shutdown()
       runLoop = False
-      CloudLog.log(component, "User Interupt (Q)")
     elif charInput == "r" or charInput == "R":
-      controller.reloadConfig()
+      controller.config.read()
     elif keyModifier.get(charInput) is not None:
       modifier = keyModifier.get(charInput)
       modTimer = datetime.now()

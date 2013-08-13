@@ -54,7 +54,7 @@ class Monitor:
   def _push(self):
     try:
       status = self._controller.status()
-      status["app_engine_key"] = Keys.APPENGINE_USER
+      status["user_key"] = Keys.APPENGINE_USER
       content = json.dumps(status)
       self._query("POST", "/set/status", content)
     except Exception, e:
@@ -63,8 +63,8 @@ class Monitor:
 
   def _pull(self):
     try:
-      commands = []
-      result = self._query("GET", "/get/cmds?clear=true", "")
+      content = Keys.APPENGINE_USER
+      result = self._query("POST", "/cmds/get?clear=true", content)
       commands = json.loads(result)
     except Exception, e:
       return

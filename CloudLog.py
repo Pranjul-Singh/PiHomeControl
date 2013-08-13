@@ -1,4 +1,5 @@
 import json
+import Keys
 import httplib
 import logging
 
@@ -57,6 +58,7 @@ def _stringify(component, message, json_data=None, value=None, exception=None):
 def _sendToCloud(component, value):
   try:
     content = {}
+    content["user_key"] = Keys.APPENGINE_USER
     content["component"] = component
     content["value"] = value
     content = json.dumps(content)

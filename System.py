@@ -1,5 +1,4 @@
 import Hue
-import time
 import AirCon
 import Harmony
 import CloudLog
@@ -71,16 +70,6 @@ class Controller:
       CloudLog.error("System:AddHandler", "Error adding handler.", e)
 
 
-  def waitForShutdown(self):
-    running = True
-    while running:
-      running = False
-      for handler in self._handlers:
-        if handler.running is True:
-          running = True
-      time.sleep(1.0)
-
-
   def _setState(self, new_state):
     if new_state == "AWAY":
       if self._away_timer is not None:
@@ -102,7 +91,7 @@ class Controller:
   def shutdown(self):
     component = "System:ShutDown"
     self._setState("SHUTDOWN")
-    for handler in self._handlers:
+    for key, handler in self._handlers.iteritems():
       handler.stop()
     self._temperature.stop()
     self._status["time"]["shutdown"] = int(datetime.now().strftime('%s')) * 1000
@@ -112,7 +101,6 @@ class Controller:
   def _executeCommand(self, command, modifier=None):
     component = "System:ExecuteCommand"
     CloudLog.log(component, command["name"])
-    
     if command.get("lights") is not None:
       for light in command["lights"]:
         try:
@@ -123,7 +111,6 @@ class Controller:
           self._hue.sendCommand(light["lights"], cmd)
         except Exception, e:
           CloudLog.error("System:executeCommand", "Lights", e)
-    
     if command.get("ac") is not None:
       for ac in command["ac"]:
         try:
@@ -163,23 +150,19 @@ class Controller:
               self._status["ac"][ac["device"]] = temperature
         except Exception, e:
           CloudLog.error("System:executeCommand", "AC", e)
-    
     if command.get("harmony") is not None:
       try:
         activity_id = self.config.harmony_activities.get(command.get("harmony"))
         self._harmony.startActivity(activity_id)
       except Exception, e:
         CloudLog.error("System:executeCommand", "Harmony", e)
-    
     if command.get("sound") is not None:
       try:
         SoundSystem.play(command["sound"])
       except Exception, e:
         CloudLog.error("System:executeCommand", "Sound", e)
-
     if command.get("system_state") is not None:
       self._setState(command["system_state"])
-
 
 
   def executeCommandByName(self, command_name, modifier=None):

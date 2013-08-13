@@ -8,6 +8,7 @@ import CloudLog
 import Door
 import GVoice
 import Keypad
+import UDPHandler
 
 def main():
     appName = "PiHomeControl"
@@ -26,6 +27,7 @@ def main():
       controller.addHandler(Cloud.Monitor)
       controller.addHandler(Door.Monitor)
       controller.addHandler(GVoice.Monitor)
+      controller.addHandler(UDPHandler.Monitor)
       Keypad.listen(controller)
 
     except Exception, e:

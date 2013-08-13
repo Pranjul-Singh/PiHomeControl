@@ -1,9 +1,8 @@
 {
   "config": {
-    "upd_broadcast": {
-      "enabled": false,
-      "port": 1234,
-      "interval": 15
+    "udp_listener": {
+      "announce": true,
+      "listen": true
     },
     "cloud_sync": {
       "push": true,
@@ -25,7 +24,10 @@
     },
     "gvoice": {
       "enabled": true,
-      "interval": 15
+      "interval": 15,
+      "cmd_new": "GVoiceNew",
+      "cmd_zero": "GVoiceZero",
+      "cmd_error": "GVoiceError"
     },
     "ac_default_temp": "73",
     "ready_sound": "sounds/ready.mp3"
@@ -66,6 +68,11 @@
     "FMRadio": 4935366
   },
   "commands": [
+    {
+      "name": "TEST",
+      "lights": [{"lights":[10], "command": "VirginBlue"}],
+      "sound": "sounds/test.mp3"
+    },
     {
       "name": "HOME",
       "key": "H",
@@ -213,7 +220,7 @@
       ]
     },
     {
-      "name": "GVoiceNone",
+      "name": "GVoiceZero",
       "lights": [
         {
           "lights": [9],

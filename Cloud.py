@@ -62,6 +62,7 @@ class Monitor:
 
 
   def _pull(self):
+    commands = []
     try:
       content = Keys.APPENGINE_USER
       result = self._query("POST", "/cmds/get?clear=true", content)
@@ -87,8 +88,9 @@ class Monitor:
       conn.request(method, url, content, headers)
       response = conn.getresponse()
       if response.status != 200:
-        CloudLog.error(self._component, "Error updating system status.")
+        CloudLog.error(self._component, "Query response was not 200.")
+      result = response.read()
       conn.close()
-      return response.read()
+      return result
     except Exception, e:
-      CloudLog.error(self._component, "Exception while updating system status.", e)
+      CloudLog.error(self._component, "Exception performing Cloud query.", e)

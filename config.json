@@ -6,8 +6,8 @@
     },
     "cloud_sync": {
       "push": true,
-      "pull": false,
-      "interval": 75
+      "pull": true,
+      "interval": 30
     },
     "temperature_threshold": {
       "inside": 73,
@@ -20,7 +20,7 @@
     },
     "inside_temperature": {
       "enabled": true,
-      "interval": 60
+      "interval": 90
     },
     "gvoice": {
       "enabled": true,

@@ -97,7 +97,7 @@
       "system_state": "AWAY",
       "lights": [
         {
-          "lights": [1,2,3,4,5,6,7,8,9,10,11],
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12],
           "command": "Off"
         }
       ],
@@ -173,7 +173,7 @@
           "command": "VirginBlue"
         },
         {
-          "lights": [1, 2, 4, 5, 6, 7, 8, 9, 10],
+          "lights": [1, 2, 4, 5, 6, 7, 8, 9, 10, 12],
           "command": "Off"
         }
       ],
@@ -237,6 +237,11 @@
       "name": "AMPOff",
       "key": "X",
       "harmony": "Off"
+    },
+    {
+      "name": "CLOSET",
+      "key": "C",
+      "lights": [{"lights":[12], "command": "Default"}]
     }
   ]
 }

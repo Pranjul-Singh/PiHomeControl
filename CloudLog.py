@@ -2,39 +2,51 @@ import json
 import Keys
 import httplib
 import logging
+import logging.handlers
+import SoundSystem
 
 def init(log_file):
+  # Setup the basic logging configuration
   logLevel = logging.INFO
   logFormat = '%(asctime)s | %(levelname)-7s | %(message)s'
-  logging.basicConfig(format=logFormat, filename=log_file, level=logLevel)
-  console = logging.StreamHandler()
-  console.setLevel(logLevel)
-  console.setFormatter(logging.Formatter(logFormat))
+  logging.basicConfig(level=logLevel, format=logFormat)
+  # Setup the log to file
+  logfile = logging.handlers.TimedRotatingFileHandler(log_file, when='W0', backupCount=10)
+  logfile.setLevel(logLevel)
+  logfile.setFormatter(logging.Formatter(logFormat))
+  file_logger = logging.getLogger('file-logger')
+  file_logger.addHandler(logfile)
 
 def debug(component, message, json_data=None, value=None, exception=None):
   DEBUG = False
   if DEBUG:
-    component = "*" + component
-    _sendToConsole(component, message, json_data, value, exception)
-    _sendToLocalLog(component, message, json_data, value, exception)
+    log = _stringify(component, message)
+    file_logger.debug(log)
 
 def log(component, message):
-  _sendToConsole(component, message)
-  _sendToLocalLog(component, message)
+  file_logger = logging.getLogger('file-logger')
+  log = _stringify(component, message)
+  file_logger.info(log)
 
 def track(component, value):
-  _sendToLocalLog(component, value)
+  file_logger = logging.getLogger('file-logger')
+  file_logger.info(_stringify(component, value))
   _sendToCloud(component, value)
 
 def error(component, message, exception=None):
-  logging.exception(component)
+  file_logger = logging.getLogger('file-logger')
+  file_logger.exception(component)
+  file_logger.debug(message)
   if exception is not None:
-    logging.info(str(exception))
-  _sendToConsole(component, message, exception)
-  _sendToLocalLog(component, message, exception)
+    file_logger.debug(str(exception))
+  file_logger.debug("-- end --")
+  try:
+    SoundSystem.play('/sounds/error.mp3')
+  except:
+    pass
 
 def _stringify(component, message, json_data=None, value=None, exception=None):
-  new_line = "\n\r"
+  new_line = "\r\n"
   json_data = None
   log = "[" + component + "] " + message
   try:
@@ -73,14 +85,3 @@ def _sendToCloud(component, value):
     conn.close()
   except Exception, e:
     error("SendToCloud", "Client side error syncing track data to cloud.", e)
-
-
-def _sendToConsole(component, message, json_data=None, value=None, exception=None):
-  log = _stringify(component, message, json_data, value, exception)
-  print log
-
-def _sendToLocalLog(component, message, json_data=None, value=None, exception=None):
-  log = _stringify(component, message, json_data, value, exception)
-  logging.info(log)
-
-

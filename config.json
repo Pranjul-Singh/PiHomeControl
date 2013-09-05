@@ -92,6 +92,15 @@
       "sound": "sounds/home.mp3"
     },
     {
+      "name": "LIGHTSOFF",
+      "lights": [
+        {
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12],
+          "command": "Off"
+        }
+      ]
+    },
+    {
       "name": "AWAY",
       "key": "0",
       "system_state": "AWAY",

@@ -36,6 +36,7 @@ class Monitor:
 
   def _runLoop(self, params):
     CloudLog.log(self._component, "Running.")
+    interval = self._settings["interval"]
     if self.unread is None:
       self.unread = 0
     while self.running:

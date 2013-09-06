@@ -217,7 +217,7 @@
           "command": "VirginBlue"
         }
       ],
-      "sound": "sounds/bell.mp3"
+      "sound": "sounds/new-sms.ogg"
     },
     {
       "name": "GVoiceError",

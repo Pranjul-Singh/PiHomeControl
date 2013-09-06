@@ -6,6 +6,7 @@ import Config
 import System
 import CloudLog
 import Door
+import Away
 import GVoice
 import Keypad
 import UDPHandler
@@ -28,6 +29,7 @@ def main():
       controller.addHandler(Door.Monitor)
       controller.addHandler(GVoice.Monitor)
       controller.addHandler(UDPHandler.Monitor)
+      controller.addHandler(Away.Monitor)
       Keypad.listen(controller)
 
     except Exception, e:

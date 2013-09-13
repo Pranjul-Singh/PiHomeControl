@@ -35,13 +35,14 @@ class Monitor:
     CloudLog.log(self._component, "Running.")
     interval = 300
     while self.running:
+      time.sleep(interval)
       try:
         if self._controller.state == "AWAY":
           state = self._controller.status()
           hue_status = state["hue"]
           any_on = False
           for light in hue_status["lights"]:
-            if light["state"]["on"] is True:
+            if hue_status["lights"][light]["state"]["on"] is True:
               any_on = True
           if any_on is True:
             self._controller.executeCommandByName("LIGHTSOFF")
@@ -50,5 +51,4 @@ class Monitor:
         CloudLog.error(self._component, "Error in _runLoop", e)
         if interval < 3000:
           interval += random.randint(120,300)
-      time.sleep(interval)
     CloudLog.log(self._component, "Stopped.")

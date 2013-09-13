@@ -57,9 +57,10 @@ class Monitor:
         else:
           interval = self._settings["interval"] * 2
       except Exception, e:
+        CloudLog.error(self._component, "Error in run loop", e)
         cmd = self._settings["cmd_error"]
         self._controller.executeCommandByName(cmd)
         if interval < self._settings["interval"] * 10:
-          interval += self._interval
+          interval += interval
       time.sleep(interval)
     CloudLog.log(self._component, "Stopped.")

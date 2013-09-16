@@ -44,7 +44,7 @@ class Monitor:
           for light in hue_status["lights"]:
             if hue_status["lights"][light]["state"]["on"] is True:
               any_on = True
-          if any_on is True:
+          if any_on is True and self._controller.state == "AWAY":
             self._controller.executeCommandByName("LIGHTSOFF")
         interval = 300
       except Exception, e:

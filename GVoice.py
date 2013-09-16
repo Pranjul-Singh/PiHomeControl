@@ -43,6 +43,7 @@ class Monitor:
       try:
         if self._controller.state == "HOME":
           output = Popen(['lynx', '-source', 'https://www.google.com/voice/request/unread'], stdout=PIPE)
+          response = None
           response = output.stdout.read()
           response = json.loads(response)
           previous_count = self.unread
@@ -56,11 +57,23 @@ class Monitor:
           interval = self._settings["interval"]
         else:
           interval = self._settings["interval"] * 2
+        response = None
+        error = None
+      except ValueError, e:
+        CloudLog.error(self._component, "Error parsing response", e)
+        response = str(response)
+        if len(response) > 512:
+          response = response[:512] + "..."
+        CloudLog.log(self._component, response)
+        error = "Value"
       except Exception, e:
         CloudLog.error(self._component, "Error in run loop", e)
-        cmd = self._settings["cmd_error"]
-        self._controller.executeCommandByName(cmd)
-        if interval < self._settings["interval"] * 10:
-          interval += interval
+        error = "Unknown"
+      finally:
+        if error is not None:
+          cmd = self._settings["cmd_error"]
+          self._controller.executeCommandByName(cmd)
+          if interval < self._settings["interval"] * 10:
+            interval += interval
       time.sleep(interval)
     CloudLog.log(self._component, "Stopped.")

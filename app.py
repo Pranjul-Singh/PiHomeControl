@@ -11,6 +11,13 @@ import GVoice
 import Keypad
 import UDPHandler
 
+## TODO: 
+# * change AC on to Fan1
+# * add mode to AC
+# * add support for Fan Speed
+# * add support for dehumidifier
+
+
 def main():
     appName = "PiHomeControl"
     try:

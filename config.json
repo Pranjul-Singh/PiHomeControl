@@ -55,7 +55,10 @@
     "Reading": {"on": true, "bri": 200, "ct": 369},
     "DimWhite": {"on": true, "bri": 64, "ct": 369},
     "VirginBlue": {"on": true, "bri": 100, "xy": [0.2591, 0.0916]},
-    "NightRed": {"on": true, "bri": 10, "xy": [0.674, 0.322]}
+    "GVoiceNew": {"on": true, "bri": 100, "xy": [0.2591, 0.0916], "alert": "select"},
+    "GVoiceError": {"on": true, "bri": 10, "xy": [0.674, 0.322], "alert": "select"},
+    "NightRed": {"on": true, "bri": 10, "xy": [0.674, 0.322]},
+    "ColorCycle": {"on": true, "bri": 200, "hue": 0, "effect": "colorloop"}
   },
   "harmony_activities": {
     "Off": -1,
@@ -214,7 +217,7 @@
       "lights": [
         {
           "lights": [9],
-          "command": "VirginBlue"
+          "command": "GVoiceNew"
         }
       ],
       "sound": "sounds/new-sms.ogg"
@@ -224,7 +227,7 @@
       "lights": [
         {
           "lights": [9],
-          "command": "NightRed"
+          "command": "GVoiceError"
         }
       ]
     },
@@ -251,6 +254,16 @@
       "name": "CLOSET",
       "key": "C",
       "lights": [{"lights":[12], "command": "Default"}]
+    },
+    {
+      "name": "PARTY",
+      "key": "p",
+      "lights": [
+        {
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12],
+          "command": "ColorCycle"
+        }
+      ]
     }
   ]
 }

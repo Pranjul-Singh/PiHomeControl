@@ -17,7 +17,8 @@ def main():
 
       ip_address = "192.168.1.201"
       port = 9557
-      Keypad.listen(ip_address, port)
+      kp = Keypad.Monitor(ip_address, port)
+      kp.run()
 
 
     except Exception, e:

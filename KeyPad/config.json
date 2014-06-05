@@ -1,0 +1,13 @@
+{
+  "0": "AWAY",
+  "\r": "MORNING",
+  "1": "FRONT_HALL",
+  "2": "LR_OVERHEAD",
+  "3": "LR_IKEA",
+  "4": "KITCHEN",
+  "5": "BR_OVERHEAD",
+  "6": "BR_SIDE",
+  "7": "SLEEP",
+  "8": "LR_AC",
+  "9": "BR_AC"
+}

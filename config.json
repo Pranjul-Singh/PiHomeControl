@@ -14,7 +14,7 @@
       "outside": 75
     },
     "outside_temperature": {
-      "enabled": true,
+      "enabled": false,
       "interval": 600,
       "location": "40.69748,-73.98093"
     },
@@ -52,12 +52,13 @@
     "Relax": {"on": true, "bri": 144, "ct": 469},
     "Concentrate": {"on": true, "bri": 219, "ct": 233},
     "Energize": {"on": true, "bri": 203, "ct": 156},
-    "Reading": {"on": true, "bri": 200, "ct": 369},
+    "Reading": {"on": true, "bri": 250, "ct": 369},
     "DimWhite": {"on": true, "bri": 64, "ct": 369},
     "VirginBlue": {"on": true, "bri": 100, "xy": [0.2591, 0.0916]},
-    "GVoiceNew": {"on": true, "bri": 100, "xy": [0.2591, 0.0916], "alert": "select"},
+    "GVoiceNew": {"on": true, "bri": 100, "xy": [0.2591, 0.0916], "alert": "lselect"},
     "GVoiceError": {"on": true, "bri": 10, "xy": [0.674, 0.322], "alert": "select"},
     "NightRed": {"on": true, "bri": 10, "xy": [0.674, 0.322]},
+    "WhiteStrip": {"on": true, "bri": 250, "hue": 0, "sat": 25},
     "ColorCycle": {"on": true, "bri": 200, "hue": 0, "effect": "colorloop"}
   },
   "harmony_activities": {
@@ -98,7 +99,7 @@
       "name": "LIGHTSOFF",
       "lights": [
         {
-          "lights": [1,2,3,4,5,6,7,8,9,10,11,12],
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12,13,14],
           "command": "Off"
         }
       ]
@@ -109,7 +110,7 @@
       "system_state": "AWAY",
       "lights": [
         {
-          "lights": [1,2,3,4,5,6,7,8,9,10,11,12],
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12,13,14],
           "command": "Off"
         }
       ],
@@ -132,9 +133,10 @@
       "system_state": "HOME",
       "lights": [
         {
-          "lights": [1, 2, 5, 6],
+          "lights": [1, 2, 3, 5, 6],
           "command": "Default"
-        }
+        },
+        {"lights": [14], "command": "WhiteStrip"}
       ],
       "harmony": "FMRadio"
     },
@@ -167,7 +169,7 @@
       "name": "BR_SIDE",
       "key": "6",
       "lights": [
-        {"lights":[3], "command": "Default"},
+        {"lights":[13], "command": "Default"},
         {"lights":[11], "command": "VirginBlue"}
       ]
     },
@@ -177,7 +179,7 @@
       "system_state": "SLEEP",
       "lights": [
         {
-          "lights": [3],
+          "lights": [13],
           "command": "Reading"
         },
         {
@@ -185,14 +187,14 @@
           "command": "VirginBlue"
         },
         {
-          "lights": [1, 2, 4, 5, 6, 7, 8, 9, 10, 12],
+          "lights": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14],
           "command": "Off"
         }
       ],
       "ac": [
         {
           "device": "LR",
-          "state": "Off"
+          "state": "Auto"
         },
         {
           "device": "BR",
@@ -257,12 +259,20 @@
     },
     {
       "name": "PARTY",
-      "key": "p",
+      "key": "P",
       "lights": [
         {
-          "lights": [1,2,3,4,5,6,7,8,9,10,11,12],
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12,13,14],
           "command": "ColorCycle"
         }
+      ]
+    },
+    {
+      "name": "BATHROOM",
+      "key": "B",
+      "lights": [
+        {"lights":[3], "command": "Default"},
+        {"lights":[14], "command": "WhiteStrip"}
       ]
     }
   ]

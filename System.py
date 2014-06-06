@@ -26,8 +26,8 @@ class Controller:
     self._status["time"]["start"] = int(datetime.now().strftime('%s')) * 1000
     self.config = config
 
-    self._aircon = AirCon.Bridge(config.ac_commands)
     self._hue = Hue.Bridge()
+    self._aircon = AirCon.Bridge(config.ac_commands)
     self._harmony = Harmony.Bridge()
     self._temperature = Temperature.Monitor(
      config.settings["outside_temperature"],

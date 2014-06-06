@@ -1,13 +1,16 @@
 {
-  "0": "AWAY",
-  "\r": "MORNING",
+  "0": "BR_SIDE",
+  ".": "MORNING",
+  "\r": "SLEEP",
   "1": "FRONT_HALL",
   "2": "LR_OVERHEAD",
   "3": "LR_IKEA",
   "4": "KITCHEN",
   "5": "BR_OVERHEAD",
-  "6": "BR_SIDE",
-  "7": "SLEEP",
+  "6": "CLOSET",
+  "7": "BATHROOM",
   "8": "LR_AC",
-  "9": "BR_AC"
+  "9": "BR_AC",
+  "P": "PARTY",
+  "R": "RELOAD_CONFIG"
 }

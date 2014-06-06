@@ -17,7 +17,7 @@ class Monitor:
     self._port = port
     with open("config.json", "r") as text_file:
       results = text_file.read()
-    self._commands = json.loads(results) 
+    self._commands = json.loads(results)
 
 
   def run(self):
@@ -47,7 +47,7 @@ class Monitor:
       elif keyModifier.get(charInput) is not None:
         modifier = keyModifier.get(charInput)
         modTimer = datetime.now()
-      else: 
+      else:
         CloudLog.log(component + ":KeyPress", charInput + ":" + str(modifier))
         try:
           command = self._commands[charInput]
@@ -59,8 +59,7 @@ class Monitor:
 
 
   def _announce(self, command):
-    logging.info(command)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(json.dumps(command), (self._ip_address, self._port))
     sock.close()
-    
+

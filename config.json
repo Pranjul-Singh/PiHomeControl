@@ -69,7 +69,8 @@
     "ChromeCast": 5051580,
     "AppleTV": 4935357,
     "Roku": 4941208,
-    "FMRadio": 4935366
+    "FMRadio": 4935366,
+    "FireTV": 1
   },
   "commands": [
     {
@@ -101,6 +102,15 @@
         {
           "lights": [1,2,3,4,5,6,7,8,9,10,11,12,13,14],
           "command": "Off"
+        }
+      ]
+    },
+    {
+      "name": "ALL_LIGHTS",
+      "lights": [
+        {
+          "lights": [1,2,3,4,5,6,7,8,9,10,11,12,13,14],
+          "command": "Default"
         }
       ]
     },
@@ -222,7 +232,7 @@
           "command": "GVoiceNew"
         }
       ],
-      "sound": "sounds/new-sms.ogg"
+      "sound": "sounds/mocking-jay.mp3"
     },
     {
       "name": "GVoiceError",
@@ -246,6 +256,14 @@
       "name": "FMRadio",
       "key": "F",
       "harmony": "FMRadio"
+    },
+    {
+      "name": "AppleTV",
+      "harmony": "AppleTV"
+    },
+    {
+      "name": "FireTV",
+      "harmony": "FireTV"
     },
     {
       "name": "AMPOff",

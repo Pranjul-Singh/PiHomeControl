@@ -14,7 +14,7 @@ class Bridge:
     CloudLog.log(self._component, "Initializing.")
     if connection_settings is None:
       connection_settings = self._find()
-      
+
     if connection_settings is not None:
       self._ip_address = connection_settings["ip"]
       self._port = connection_settings["port"]
@@ -38,7 +38,7 @@ class Bridge:
       listen_sock.bind((my_ip, listen_port))
       listen_sock.listen(1)
       listen_sock.settimeout(None)
-      
+
       # Send the UDP packet to the Harmony Bridge
       send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
       send_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -52,6 +52,7 @@ class Bridge:
         if not data:
           break
       conn.close()
+      result = result.replace("https://", "")
       return dict(item.split(":") for item in result.split(";"))
     except Exception, e:
       CloudLog.error(self._component, "Error while searching for Harmony", e)

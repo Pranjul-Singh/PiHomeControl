@@ -71,10 +71,7 @@ class Monitor:
   def _runListenLoop(self, params):
     udp_socket = None
     try:
-      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      s.connect(("google.com",80))
-      ip = s.getsockname()[0]
-      s.close()
+      ip = "192.168.1.201"
       port = 9557
       udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
       udp_socket.bind((ip, port))

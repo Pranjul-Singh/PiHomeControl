@@ -16,7 +16,6 @@ class Controller:
   _harmony = None
   _temperature = None
   _status = {
-    "ac": {"LR": "Off", "BR": "Off"},
     "time": {"start": ""}
   }
   _away_timer = None
@@ -39,6 +38,10 @@ class Controller:
     status = self._status
     status["system_state"] = self.state
     try:
+      status["ac"] = self._aircon.status()
+    except:
+      status["ac"] = "ERROR"
+    try:
       act_id = self._harmony.currentActivity()["response"]
       status["harmony_activity"] = self.config.get_activity_name(act_id)
     except:
@@ -59,7 +62,7 @@ class Controller:
       status["temperature"]["outside"] = None
     return status
 
-  
+
   def addHandler(self, handler):
     CloudLog.log("System:AddHandler", str(handler))
     try:
@@ -116,25 +119,29 @@ class Controller:
         try:
           if modifier == "Off" or ac["state"] == "Off":
             self._aircon.turn_off(ac["device"])
-            self._status["ac"][ac["device"]] = "Off"
           elif modifier == "UP":
             try:
-              temperature = str(int(self._status["ac"][ac["device"]]) + 1)
-              self._aircon.set_temp(ac["device"], temperature)
-              self._status["ac"][ac["device"]] = temperature
+              self._aircon.change_temp(ac["device"], "UP")
             except:
               pass
           elif modifier == "DOWN":
             try:
-              temperature = str(int(self._status["ac"][ac["device"]]) - 1)
-              self._aircon.set_temp(ac["device"], temperature)
-              self._status["ac"][ac["device"]] = temperature
+              self._aircon.change_temp(ac["device"], "DOWN")
             except:
               pass
           elif ac["state"] == "On":
             temperature = self.config.settings["ac_default_temp"]
             self._aircon.turn_on(ac["device"], temperature)
-            self._status["ac"][ac["device"]] = temperature
+          elif ac["state"] == "FC":
+            try:
+              self._aircon.fast_cool(ac["device"])
+            except:
+              pass
+          elif ac["state"] == "F1" or ac["state"] == "F2" or ac["state"] == "F3":
+            try:
+              self._aircon.fan(ac["device"], ac["state"])
+            except:
+              pass
           elif ac["state"] == "Auto":
             turn_on = False
             threshold = self.config.settings["temperature_threshold"]
@@ -147,7 +154,6 @@ class Controller:
             if turn_on:
               temperature = self.config.settings["ac_default_temp"]
               self._aircon.turn_on(ac["device"], temperature)
-              self._status["ac"][ac["device"]] = temperature
         except Exception, e:
           CloudLog.error("System:executeCommand", "AC", e)
     if command.get("harmony") is not None:

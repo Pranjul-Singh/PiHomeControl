@@ -29,7 +29,7 @@
       "cmd_zero": "GVoiceZero",
       "cmd_error": "GVoiceError"
     },
-    "ac_default_temp": "73",
+    "ac_default_temp": "72",
     "ready_sound": "sounds/ready.mp3"
   },
   "ac_commands": {
@@ -99,14 +99,12 @@
   },
   "harmony_activities": {
     "Off": -1,
-    "HDMIInput": 5051587,
     "TV": 4935390,
-    "XMRadio": 4935362,
     "ChromeCast": 5051580,
     "AppleTV": 4935357,
-    "Roku": 4941208,
     "FMRadio": 4935366,
-    "FireTV": 8590102
+    "FireTV": 9792975,
+    "Molly": 9792797
   },
   "commands": [
     {
@@ -123,6 +121,14 @@
         {
           "device": "LR",
           "state": "Auto"
+        },
+        {
+          "device": "KI",
+          "state": "Off"
+        },
+        {
+          "device": "BR",
+          "state": "Off"
         }
       ],
       "sound": "sounds/home.mp3"
